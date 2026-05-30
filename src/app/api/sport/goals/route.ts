@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
 
     const goal = await db.sportGoal.create({
       data: {
+        id: `sport-goal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         profileId: profile.id,
         name: body.name,
         description: body.description,

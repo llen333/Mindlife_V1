@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
 
     const category = await db.category.create({
       data: {
+        id: `category-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name,
         icon: icon || 'Folder',
         color: color || '#6366f1',

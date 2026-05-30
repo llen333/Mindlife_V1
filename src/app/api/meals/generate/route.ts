@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getRandomMeal, LUNCH_MEALS, DINNER_MEALS, BREAKFAST_MEALS, SNACK_MEALS } from '@/lib/nutrition-fallback';
+import { getRandomMeal, LUNCH_MEALS, DINNER_MEALS, BREAKFAST_MEALS, SNACK_MEALS, Ingredient } from '@/lib/nutrition-fallback';
+
+type GeneratedMeal = {
+  id: string;
+  name: string;
+  description: string;
+  date: string;
+  dayName: string;
+  dayShort: string;
+  type: string;
+  calories: number;
+  protein: number;
+  ingredients: Ingredient[];
+  instructions: string;
+  prepTime?: string;
+  cookTime?: string;
+  tags?: string;
+};
 
 // Days of the week in French
 const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
@@ -211,6 +228,7 @@ export async function POST(request: NextRequest) {
         try {
           await db.meal.create({
             data: {
+              id: meal.id,
               userId,
               name: meal.name,
               description: meal.description,
@@ -285,7 +303,7 @@ export async function GET(request: NextRequest) {
       const selectedLunches = selectUniqueMeals(LUNCH_MEALS, 7);
       const selectedDinners = selectUniqueMeals(DINNER_MEALS, 7);
       
-      const meals = [];
+      const meals: GeneratedMeal[] = [];
       
       for (let i = 0; i < 7; i++) {
         const date = new Date(start);

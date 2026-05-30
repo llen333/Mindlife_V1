@@ -158,9 +158,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculs automatiques
-    let bmr = null;
-    let tdee = null;
-    let imc = null;
+    let bmr: number | null = null;
+    let tdee: number | null = null;
+    let imc: number | null = null;
 
     if (weight && height && gender) {
       // IMC

@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
 
     const note = await db.note.create({
       data: {
+        id: `note-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title,
         content,
         type: type || 'text',

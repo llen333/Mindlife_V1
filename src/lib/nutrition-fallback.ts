@@ -7,7 +7,7 @@
 // DONNÉES ALIMENTAIRES
 // ============================================
 
-interface Ingredient {
+export interface Ingredient {
   name: string;
   quantity: string;
   calories?: number;

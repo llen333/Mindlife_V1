@@ -52,20 +52,26 @@ src/
 - Scraping de recettes (Marmiton, 750g) fonctionnel
 
 ### ⚠️ Problèmes connus
-- **Erreurs TypeScript restantes** (voir `npm run build` ou `tsc --noEmit`)
+- **200 erreurs TypeScript restantes** dans les composants (API routes: 0 erreur)
+  - `NutritionPage.tsx` (9) — `RefObject<null>` vs `RefObject`
+  - `HabitsPanel.tsx` (8) — `never` type sur `habit.logs`
+  - `CalendarPage.tsx` (9) — `never` type sur tableaux
+  - `GoalModal.tsx` (6) — types `Goal`/`GoalMilestone`
+  - `RoutineBuilder.tsx` (5) — `GrowthRoutine` type
+  - `useVoiceRecording.ts` (5) — `SpeechRecognition` API
+  - Autres composants dispersés (~160)
 - **Store fragmenté** : chaque store a son propre `Meal` type — le mapping entre DB ↔ store ↔ composant n'est pas unifié. Ça cause des bugs d'affichage (ex: grille hebdo vide).
-- **`AgentsDashboard.tsx`** : erreurs de type sur `SetStateAction<Memory | null>`
 - **Pas de tests automatisés** — toute modification est risquée
-- **Pas de git** — aucune traçabilité, pas de rollback possible
+- **Git** initialisé ✅ (snapshot + docs + fixes commités)
 - **LLM Provider** : configuré pour z.ai (`glm-4.5-air`). Changements de provider récents (Google) ont causé des bugs.
 
 ### 🚧 En cours
-- Stabilisation TypeScript (correction progressive des erreurs)
+- Palier 1 : stabilisation TypeScript (API routes: ✅ 0 erreur, composants: ⏳ 200 restantes)
 - Fix de l'affichage des repas (grille hebdo)
 
 ### 📋 TODO global (priorisé)
-1. **Initialiser git** + commit initial (snapshot)
-2. **Corriger toutes les erreurs TypeScript** (build doit passer sans erreur)
+1. **~~Initialiser git~~** ✅ (5 commits, 571 fichiers)
+2. **Corriger toutes les erreurs TypeScript** (200 restantes dans composants)
 3. **Unifier le type `Meal`** : un seul type source de vérité (Prisma), mapper propre pour l'affichage
 4. **Tester chaque page manuellement** (navigation, CRUD, rendu)
 5. **Ajouter un script de vérification** (`npm run build && curl localhost:3090`)
@@ -106,9 +112,19 @@ src/
 
 | Fichier | Modification | Raison |
 |---------|-------------|--------|
-| `src/components/nutrition/hooks/useNutritionData.ts` | Fallback vers `allMeals` quand les repas sauvegardés ne correspondent pas à la semaine | Grille hebdo vide |
-| `src/lib/stores/nutritionStore.ts` | `loadNutritionData` ne charge plus les repas (uniquement le profil) | Évite les overwrites intempestifs du store |
-| `src/components/agents/AgentsDashboard.tsx` | Fix du `</div>` manquant (grid-cols-2) + guards null sur `setEditingMemory` | Page blanche (500) |
+| `toute la session` | Suppression de Convex + fix i18n + fix 67 erreurs TS dans API routes | Palier 1 — stabilisation |
+| `src/app/api/habit-logs/route.ts` | `habit` → `Habit` (Prisma relation PascalCase) | Erreur TS |
+| `src/app/api/users/route.ts` | `let bmr = null` → `let bmr: number \| null = null` | Erreur TS |
+| `src/app/api/sport/*/route.ts` | `sportGoals` → `SportGoal`, ajout `id` dans creates, `exercises` → `SessionExercise` | Erreurs TS Prisma |
+| `src/app/api/meals/*/route.ts` | Ajout `id` dans creates, type `GeneratedMeal`, `const X: any[] = []` | Erreurs TS Prisma + `never` |
+| `src/app/api/{tasks,goals,categories,habits,journal,notes,voice-memos}/route.ts` | Ajout `id` dans creates Prisma (modèles sans `@default` sur `@id`) | Erreurs TS Prisma |
+| `src/app/api/speech/route.ts` | `'tts' as any` et `'asr' as any` | `FunctionMap` type trop étroit |
+| `src/app/api/test-tools/route.ts` | Suppression import mort `callOpenAICompatibleDirect` | Export supprimé |
+| `src/app/api/nutrition-profile/route.ts` | Ajout `id` dans upsert.create et create | Erreur TS |
+| `src/lib/nutrition-fallback.ts` | Export de `Ingredient` | Nécessaire pour `GeneratedMeal` |
+| `src/components/nutrition/hooks/useNutritionData.ts` | Fallback vers `allMeals` | Grille hebdo vide |
+| `src/lib/stores/nutritionStore.ts` | `loadNutritionData` ne charge plus les repas | Évite les overwrites |
+| `src/components/agents/AgentsDashboard.tsx` | Fix `</div>` manquant + guards null | Page blanche (500) |
 
 ## 6. CONTEXTE CRITIQUE (ce que les LLMs oublient toujours)
 

@@ -87,6 +87,7 @@ export async function PUT(request: NextRequest) {
         updatedAt: new Date(),
       },
       create: {
+        id: `nutrition-profile-${Date.now()}`,
         userId,
         weight,
         height,
@@ -141,6 +142,7 @@ export async function POST(request: NextRequest) {
 
     const profile = await db.nutritionProfile.create({
       data: {
+        id: `nutrition-profile-${Date.now()}`,
         userId,
         weight,
         height,

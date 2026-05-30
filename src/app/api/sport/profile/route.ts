@@ -7,10 +7,10 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId') || 'default-user';
     
-    let profile = await db.sportProfile.findUnique({
+    let profile: any = await db.sportProfile.findUnique({
       where: { userId },
       include: {
-        sportGoals: {
+        SportGoal: {
           where: { status: 'active' },
           orderBy: { createdAt: 'desc' },
           take: 5
@@ -22,13 +22,14 @@ export async function GET(request: NextRequest) {
     if (!profile) {
       profile = await db.sportProfile.create({
         data: {
+          id: `sport-profile-${Date.now()}`,
           userId,
           level: 'intermediate',
           goals: JSON.stringify(['force', 'hypertrophie']),
           preferredSports: JSON.stringify(['musculation', 'cardio'])
         },
         include: {
-          sportGoals: true
+          SportGoal: true
         }
       });
     }
@@ -56,6 +57,7 @@ export async function PUT(request: NextRequest) {
         preferredSports: preferredSports ? JSON.stringify(preferredSports) : undefined
       },
       create: {
+        id: `sport-profile-${Date.now()}`,
         userId,
         level: level || 'intermediate',
         goals: JSON.stringify(goals || []),

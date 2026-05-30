@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       where,
       orderBy: { date: 'desc' },
       include: {
-        habit: {
+        Habit: {
           include: {
             Category: true,
           },
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
           note,
         },
         include: {
-          habit: true,
+          Habit: true,
         },
       });
       return NextResponse.json({ log: updatedLog });
@@ -98,6 +98,7 @@ export async function POST(request: NextRequest) {
     // Create new log
     const log = await db.habitLog.create({
       data: {
+        id: `habitlog-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         habitId,
         date: normalizedDate,
         completed: completed ?? true,
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
         userId,
       },
       include: {
-        habit: true,
+        Habit: true,
       },
     });
 
@@ -142,7 +143,7 @@ export async function PUT(request: NextRequest) {
       where: { id, userId },
       data: updateData,
       include: {
-        habit: true,
+        Habit: true,
       },
     });
 

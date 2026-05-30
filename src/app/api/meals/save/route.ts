@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     let savedCount = 0;
-    const savedMeals = [];
+    const savedMeals: any[] = [];
 
     for (const meal of meals) {
       try {
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
           // Create new meal
           const created = await db.meal.create({
             data: {
+              id: meal.id,
               userId,
               name: meal.name || meal.title,
               description: meal.description || '',

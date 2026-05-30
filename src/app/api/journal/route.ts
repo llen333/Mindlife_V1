@@ -61,6 +61,7 @@ export async function POST(request: NextRequest) {
 
     const entry = await db.journalEntry.create({
       data: {
+        id: `journal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title,
         content,
         mood,

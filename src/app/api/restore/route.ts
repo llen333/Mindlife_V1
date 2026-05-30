@@ -42,19 +42,19 @@ export async function POST(request: NextRequest) {
     console.log('🗑️ Deleting existing data...');
     
     // Supprimer dans l'ordre inverse des dépendances
-    stats.deleted.dayExercises = await db.dayExercise.deleteMany({});
-    stats.deleted.workoutSessions = await db.workoutSession.deleteMany({});
-    stats.deleted.biometricData = await db.biometricData.deleteMany({});
-    stats.deleted.sportGoals = await db.sportGoal.deleteMany({});
-    stats.deleted.programDays = await db.programDay.deleteMany({});
-    stats.deleted.weeklyPrograms = await db.weeklyProgram.deleteMany({});
-    stats.deleted.sportProfiles = await db.sportProfile.deleteMany({});
-    stats.deleted.spiritMessages = await db.spiritMessage.deleteMany({});
-    stats.deleted.spiritConversations = await db.spiritConversation.deleteMany({});
-    stats.deleted.tasks = await db.task.deleteMany({});
-    stats.deleted.goals = await db.goal.deleteMany({});
-    stats.deleted.events = await db.event.deleteMany({});
-    stats.deleted.categories = await db.category.deleteMany({});
+    stats.deleted.dayExercises = (await db.dayExercise.deleteMany({})).count;
+    stats.deleted.workoutSessions = (await db.workoutSession.deleteMany({})).count;
+stats.deleted.biometricData = (await db.biometricData.deleteMany({})).count;
+stats.deleted.sportGoals = (await db.sportGoal.deleteMany({})).count;
+stats.deleted.programDays = (await db.programDay.deleteMany({})).count;
+stats.deleted.weeklyPrograms = (await db.weeklyProgram.deleteMany({})).count;
+stats.deleted.sportProfiles = (await db.sportProfile.deleteMany({})).count;
+stats.deleted.spiritMessages = (await db.spiritMessage.deleteMany({})).count;
+stats.deleted.spiritConversations = (await db.spiritConversation.deleteMany({})).count;
+    stats.deleted.tasks = (await db.task.deleteMany({})).count;
+    stats.deleted.goals = (await db.goal.deleteMany({})).count;
+    stats.deleted.events = (await db.event.deleteMany({})).count;
+    stats.deleted.categories = (await db.category.deleteMany({})).count;
 
     if (!keepUsers) {
       await db.user.deleteMany({});

@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
     // Trouver la bonne catégorie
     // 1. D'abord par ID
     // 2. Si pas trouvée, par nom (mapping depuis les IDs par défaut)
-    let finalCategoryId = null;
+    let finalCategoryId: string | null = null;
     if (categoryId) {
       const existingById = await db.category.findUnique({
         where: { id: categoryId }

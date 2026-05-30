@@ -429,7 +429,7 @@ export async function POST(request: NextRequest) {
         });
         
         // Créer les messages de la conversation
-        const messages = [];
+        const messages: any[] = [];
         for (let m = 0; m < 3; m++) {
           const msg = await db.spiritMessage.create({
             data: {

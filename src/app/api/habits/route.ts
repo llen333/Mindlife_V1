@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
 
     const habit = await db.habit.create({
       data: {
+        id: `habit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         name,
         description,
         frequency: frequency || 'daily',

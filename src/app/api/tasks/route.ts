@@ -139,6 +139,7 @@ export async function POST(request: NextRequest) {
 
       const event = await db.event.create({
         data: {
+          id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           title: task.title,
           description: task.description,
           startAt: new Date(startDate),
@@ -239,6 +240,7 @@ export async function PUT(request: NextRequest) {
     if (addToCalendar && startDate && !task.eventId) {
       const event = await db.event.create({
         data: {
+          id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           title: task.title,
           description: task.description || undefined,
           startAt: new Date(startDate),

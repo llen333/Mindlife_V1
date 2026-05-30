@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
 
     const memo = await db.voiceMemo.create({
       data: {
+        id: `voicememo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title,
         transcript,
         audioUrl,

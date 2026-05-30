@@ -49,12 +49,16 @@ export async function POST(request: NextRequest) {
 
     if (!profile) {
       profile = await db.sportProfile.create({
-        data: { userId }
+        data: {
+          id: `sport-profile-${Date.now()}`,
+          userId,
+        }
       });
     }
 
     const biometric = await db.biometricData.create({
       data: {
+        id: `biometric-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         profileId: profile.id,
         weight: body.weight,
         muscleMass: body.muscleMass,

@@ -219,7 +219,7 @@ Essaie avec d'autres termes, ou dis-moi :
       }
       
       // Stocker temporairement et formater
-      const formattedRecipes = [];
+      const formattedRecipes: Array<{ tempId: string; name: string; source: string; prepTime?: number; imageUrl?: string; formatted: string }> = [];
       for (const recipe of recipes.slice(0, 3)) {
         const tempId = await storeTempRecipe(recipe, userId);
         formattedRecipes.push({

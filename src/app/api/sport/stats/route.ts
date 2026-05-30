@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         date: { gte: startDate }
       },
       include: {
-        exercises: true
+        SessionExercise: true
       },
       orderBy: { date: 'asc' }
     });
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
       const weekKey = `S${weekNumber}`;
       
       let sessionVolume = 0;
-      session.exercises.forEach(ex => {
+      session.SessionExercise.forEach(ex => {
         if (ex.weight) {
           const repsNum = parseInt(ex.reps) || 1;
           sessionVolume += ex.sets * repsNum * ex.weight;

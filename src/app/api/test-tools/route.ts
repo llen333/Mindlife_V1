@@ -21,7 +21,6 @@ export async function POST(request: NextRequest) {
   const { userId = 'mindlife-user' } = body;
   
   try {
-    const { callOpenAICompatibleDirect } = await import('./call-ai-test');
     // Re-do the flow with a simple message
     return NextResponse.json({ status: 'use GET for tool tests' });
   } catch (e: any) {

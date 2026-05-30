@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const ttsResult = await zai.functions.invoke('tts', {
+        const ttsResult = await zai.functions.invoke('tts' as any, {
           text,
           voice: voice || 'alloy',
           speed: speed || 1.0,
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        const asrResult = await zai.functions.invoke('asr', {
+        const asrResult = await zai.functions.invoke('asr' as any, {
           audio,
         });
 
