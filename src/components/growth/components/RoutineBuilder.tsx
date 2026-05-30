@@ -23,8 +23,8 @@ export function RoutineBuilder({ routines, onCompleteStep, onAddRoutine, onEditR
     setCompletingStep(null);
   };
 
-  const morningRoutines = routines.filter(r => r.type === 'morning' && r.isActive);
-  const eveningRoutines = routines.filter(r => r.type === 'evening' && r.isActive);
+  const morningRoutines = routines.filter(r => r.category === 'morning' && r.isActive);
+  const eveningRoutines = routines.filter(r => r.category === 'evening' && r.isActive);
 
   const RoutineCard = ({ routine }: { routine: GrowthRoutine }) => {
     const isExpanded = expandedId === routine.id;
@@ -44,16 +44,16 @@ export function RoutineBuilder({ routines, onCompleteStep, onAddRoutine, onEditR
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                routine.type === 'morning' ? 'bg-amber-500/20 text-amber-400' : 'bg-violet-500/20 text-violet-400'
+                routine.category === 'morning' ? 'bg-amber-500/20 text-amber-400' : 'bg-violet-500/20 text-violet-400'
               }`}>
-                <span className="text-2xl">{routine.type === 'morning' ? '🌅' : '🌙'}</span>
+                <span className="text-2xl">{routine.category === 'morning' ? '🌅' : '🌙'}</span>
               </div>
               <div>
-                <h4 className="font-medium text-white">{routine.name}</h4>
+                <h4 className="font-medium text-white">{routine.title}</h4>
                 <div className="flex items-center gap-3 text-sm text-slate-400">
                   <span className="flex items-center gap-1">
                     <Clock className="w-3.5 h-3.5" />
-                    {routine.totalDuration} min
+                    {routine.duration} min
                   </span>
                   <span>{completedSteps}/{steps.length} étapes</span>
                 </div>
@@ -73,7 +73,7 @@ export function RoutineBuilder({ routines, onCompleteStep, onAddRoutine, onEditR
           {/* Progress Bar */}
           <div className="mt-3 h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
             <motion.div
-              className={`h-full ${routine.type === 'morning' ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-violet-500 to-purple-500'}`}
+              className={`h-full ${routine.category === 'morning' ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-violet-500 to-purple-500'}`}
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.3 }}
@@ -119,12 +119,11 @@ export function RoutineBuilder({ routines, onCompleteStep, onAddRoutine, onEditR
                     </div>
                     <div className="flex-1">
                       <span className={`font-medium ${step.isCompleted ? 'text-emerald-400 line-through' : 'text-white'}`}>
-                        {step.name}
+                        {step.title}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-slate-400">
                       <span>{step.duration} min</span>
-                      {step.icon && <span>{step.icon}</span>}
                     </div>
                   </div>
                 ))}

@@ -15,7 +15,7 @@ interface HistoryPanelProps {
 export function HistoryPanel({ sessionsHistory, selectedDate, onSelectDate }: HistoryPanelProps) {
   // Get 30 days of history
   const getHistoryDays = () => {
-    const days = [];
+    const days: { date: Date; session: WorkoutSession | undefined }[] = [];
     for (let i = 0; i < 30; i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);

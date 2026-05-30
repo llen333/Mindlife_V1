@@ -39,8 +39,12 @@ const GoalsPanel = memo(function GoalsPanel() {
     if (newGoal.title.trim()) {
       addGoal({
         ...newGoal,
+        id: `goal-${Date.now()}`,
+        currentValue: 0,
         progress: 0,
-        milestones: newGoal.milestones || [],
+        startDate: new Date().toISOString().split('T')[0],
+        status: 'active',
+        milestones: (newGoal.milestones || []).map(m => ({ ...m, id: `ms-${Date.now()}-${Math.random().toString(36).slice(2, 9)}` })),
       })
       setNewGoal({
         title: '',
@@ -65,7 +69,7 @@ const GoalsPanel = memo(function GoalsPanel() {
   const toggleMilestone = (goalId: string, milestoneId: string) => {
     const goal = goals.find(g => g.id === goalId)
     if (goal) {
-      const updatedMilestones = goal.milestones.map(m => 
+      const updatedMilestones = (goal.milestones || []).map(m => 
         m.id === milestoneId ? { ...m, completed: !m.completed } : m
       )
       const completedCount = updatedMilestones.filter(m => m.completed).length
@@ -265,7 +269,7 @@ const GoalCard = memo(function GoalCard({
   onToggleMilestone, 
   onUpdateProgress 
 }: { 
-  goal: { id: string; title: string; description?: string; progress: number; categoryId: string; milestones: { id: string; title: string; completed: boolean }[] }
+  goal: { id: string; title: string; description?: string; progress: number; categoryId: string; milestones?: { id: string; title: string; completed: boolean }[] }
   category: { name: string; icon: string; color: string }
   onDelete: () => void
   onToggleMilestone: (milestoneId: string) => void
@@ -339,7 +343,7 @@ const GoalCard = memo(function GoalCard({
       </div>
 
       {/* Milestones */}
-      {goal.milestones.length > 0 && (
+      {goal.milestones && goal.milestones.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-white/60">Milestones</h4>
           <div className="space-y-2">

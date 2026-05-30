@@ -106,19 +106,19 @@ export function PsycheSection({ resources, mentalCards, practices }: PsycheSecti
           </div>
           <div className="text-center p-3 rounded-xl bg-white/5 backdrop-blur-sm">
             <div className="text-2xl font-light text-emerald-400">
-              {mentalCards.filter(c => c.masteryLevel >= 80).length}
+              {mentalCards.filter(c => (c.masteryLevel ?? 0) >= 80).length}
             </div>
             <div className="text-white/40 text-xs">Maîtrisées</div>
           </div>
           <div className="text-center p-3 rounded-xl bg-white/5 backdrop-blur-sm">
             <div className="text-2xl font-light text-amber-400">
-              {mentalCards.filter(c => c.masteryLevel >= 40 && c.masteryLevel < 80).length}
+              {mentalCards.filter(c => (c.masteryLevel ?? 0) >= 40 && (c.masteryLevel ?? 0) < 80).length}
             </div>
             <div className="text-white/40 text-xs">En cours</div>
           </div>
           <div className="text-center p-3 rounded-xl bg-white/5 backdrop-blur-sm">
             <div className="text-2xl font-light text-white/50">
-              {mentalCards.filter(c => c.masteryLevel < 40).length}
+              {mentalCards.filter(c => (c.masteryLevel ?? 0) < 40).length}
             </div>
             <div className="text-white/40 text-xs">À apprendre</div>
           </div>

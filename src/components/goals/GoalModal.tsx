@@ -240,8 +240,6 @@ export default function GoalModal({
         targetValue: editForm.targetValue ? parseFloat(editForm.targetValue) : undefined,
         unit: editForm.unit,
         milestones: editForm.milestones,
-        completedMilestones: 0,
-        totalMilestones: editForm.milestones.length,
         progress: 0,
         status: 'active',
       });
@@ -269,9 +267,6 @@ export default function GoalModal({
 
     await handleUpdate(goal.id, {
       milestones: updatedMilestones,
-      completedMilestones: completedCount,
-      totalMilestones: totalCount,
-      milestonesProgress: newProgress,
       progress: newProgress,
     });
   };
@@ -332,9 +327,6 @@ export default function GoalModal({
         targetValue: editForm.targetValue ? parseFloat(editForm.targetValue) : undefined,
         unit: editForm.unit,
         milestones: editForm.milestones,
-        completedMilestones: completedCount,
-        totalMilestones: totalCount,
-        milestonesProgress: newProgress,
         progress: newProgress,
       });
 
@@ -378,8 +370,8 @@ export default function GoalModal({
 
   if (!isOpen) return null;
 
-  const category = goal ? getCategoryBadge(goal.categoryId) : getCategoryBadge(editForm.categoryId);
-  const priority = goal ? getPriorityBadge(goal.priority) : getPriorityBadge(editForm.priority);
+  const category = getCategoryBadge(goal?.categoryId || editForm.categoryId);
+  const priority = getPriorityBadge(goal?.priority || editForm.priority);
   const numberOfDays = editForm.startDate && editForm.endDate
     ? calculateDaysBetween(editForm.startDate, editForm.endDate)
     : 0;
@@ -565,7 +557,7 @@ export default function GoalModal({
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    Étapes ({(isEditing || isCreating) ? editForm.milestones.filter(m => m.completed).length : goal?.completedMilestones || 0}/{(isEditing || isCreating) ? editForm.milestones.length : goal?.totalMilestones || 0})
+                    Étapes ({(isEditing || isCreating) ? editForm.milestones.filter(m => m.completed).length : (goal?.milestones?.filter(m => m.completed).length || 0)}/{(isEditing || isCreating) ? editForm.milestones.length : (goal?.milestones?.length || 0)})
                   </h3>
                 </div>
 
@@ -710,9 +702,9 @@ export default function GoalModal({
                         </div>
 
                         {/* Actions de l'étape */}
-                        {milestone.actions && milestone.actions.length > 0 && (
+                        {(milestone as Milestone).actions && (milestone as Milestone).actions!.length > 0 && (
                           <div className="mt-2 pl-8 text-xs text-slate-500">
-                            {milestone.actions.map((action, i) => (
+                            {(milestone as Milestone).actions!.map((action, i) => (
                               <div key={i} className="flex items-center gap-1">
                                 <ChevronRight className="w-2 h-2" />
                                 {action}

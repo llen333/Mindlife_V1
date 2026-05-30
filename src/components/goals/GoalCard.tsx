@@ -65,7 +65,7 @@ export default function GoalCard({
       className="group cursor-pointer p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] hover:border-violet-500/30 hover:bg-white/[0.04] transition-all"
     >
       <div className="flex items-start gap-3">
-        <MiniProgress value={goal.progress} color={getCategoryColor(goal.categoryId, goal.category)} />
+        <MiniProgress value={goal.progress} color={getCategoryColor(goal.categoryId, category)} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="font-medium text-white text-sm truncate">{goal.title}</h3>
@@ -73,7 +73,7 @@ export default function GoalCard({
               {priority.name}
             </span>
           </div>
-          <ProgressBar progress={goal.progress} color={getCategoryColor(goal.categoryId, goal.category)} />
+          <ProgressBar progress={goal.progress} color={getCategoryColor(goal.categoryId, category)} />
           
           {/* Mini Timeline */}
           <MiniTimeline start={goal.startDate} end={goal.endDate} progress={goal.progress} />

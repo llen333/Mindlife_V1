@@ -259,7 +259,7 @@ export default function CalendarPage() {
     const diff = startOfWeek.getDate() - day + (day === 0 ? -6 : 1);
     startOfWeek.setDate(diff);
 
-    const dates = [];
+    const dates: Date[] = [];
     for (let i = 0; i < 7; i++) {
       const date = new Date(startOfWeek);
       date.setDate(startOfWeek.getDate() + i);
@@ -270,7 +270,7 @@ export default function CalendarPage() {
 
   // Generate time slots from 8am to 8pm
   const timeSlots = useMemo(() => {
-    const slots = [];
+    const slots: string[] = [];
     for (let i = 8; i <= 20; i++) {
       slots.push(`${i.toString().padStart(2, '0')}:00`);
     }
@@ -520,7 +520,7 @@ export default function CalendarPage() {
 
   // Render month view
   const renderMonthView = () => {
-    const days = [];
+    const days: React.ReactNode[] = [];
 
     for (let i = 0; i < startingDay; i++) {
       days.push(
