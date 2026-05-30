@@ -1,0 +1,499 @@
+'use client';
+
+import { useState } from 'react';
+import { Settings, Save, Check, UserPlus, User, Flame, Utensils } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import MindLifeHeader from '../MindLifeHeader';
+import AIConfigPanel from '../AIConfigPanel';
+import { useSettingsData } from './hooks';
+import { useAIConfig } from '../hooks/useAIConfig';
+import {
+  SectionHeader,
+  IdentiteSection,
+  CorpusSection,
+  NutritionSection,
+  ApplicationSection,
+  UsersSection,
+} from './components';
+import { NewUserModal } from './modals';
+
+export default function SettingsPage() {
+  const {
+    formData,
+    setFormData,
+    isSaving,
+    saveSuccess,
+    expandedSections,
+    calculatedMetrics,
+    users,
+    currentUserProfile,
+    isAdminConnected,
+    isAdmin,
+    canSeeApiSection,
+    currentUserId,
+    setCurrentUserId,
+    createUserMutation,
+    handleSave,
+    toggleArrayItem,
+    toggleSection,
+    refetchUsers,
+  } = useSettingsData();
+
+  // AI Configuration
+  const {
+    config,
+    setConfig,
+    selectedProvider,
+    setSelectedProvider,
+    customProviderConfig,
+    setCustomProviderConfig,
+    isTestingProvider,
+    testResult,
+    providers,
+    functionProviders,
+    handleTestProvider,
+    handleAddProvider,
+    handleRemoveCustomProvider,
+    handleSetFunctionProvider,
+  } = useAIConfig();
+
+  // New user modal state
+  const [showNewUserModal, setShowNewUserModal] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+
+  const handleCreateUser = async () => {
+    if (newUserName.trim()) {
+      createUserMutation.mutate(
+        { name: newUserName.trim() },
+        {
+          onSuccess: () => {
+            setShowNewUserModal(false);
+            setNewUserName('');
+            refetchUsers();
+          },
+        }
+      );
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#020202] text-slate-200 relative overflow-x-hidden overflow-y-auto pl-[70px] pt-20">
+      {/* Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div
+          className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(249, 115, 22, 0.08) 0%, transparent 50%)',
+            filter: 'blur(60px)',
+          }}
+        />
+        <div
+          className="absolute bottom-[-20%] right-[-10%] w-[500px] h-[500px] rounded-full"
+          style={{
+            background: 'radial-gradient(circle, rgba(251, 146, 60, 0.06) 0%, transparent 50%)',
+            filter: 'blur(50px)',
+          }}
+        />
+      </div>
+
+      {/* Header */}
+      <MindLifeHeader
+        title="Paramètres"
+        subtitle="Profil Centralisé"
+        icon={Settings}
+        theme="orange"
+        showBackButton={true}
+        rightContent={
+          <div className="flex items-center gap-3 lg:gap-4">
+            {/* User Selector */}
+            {isAdminConnected && (
+              <div className="relative">
+                <select
+                  value={currentUserId}
+                  onChange={(e) => setCurrentUserId(e.target.value)}
+                  className="appearance-none bg-white/5 border border-white/10 rounded-xl pl-3 pr-8 py-2 text-xs font-medium focus:outline-none focus:border-orange-500/40 focus:bg-orange-500/5 transition-all cursor-pointer"
+                >
+                  {(users || []).map((user) => (
+                    <option
+                      key={user.id}
+                      value={user.id}
+                      className="bg-[#0a0f1a] text-white"
+                    >
+                      {user.name || 'Utilisateur'} {user.role === 'admin' ? '(Admin)' : ''}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg
+                    className="w-3.5 h-3.5 text-white/40"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            )}
+
+            {/* New User Button */}
+            {isAdminConnected && (
+              <button
+                onClick={() => setShowNewUserModal(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 text-xs font-bold hover:bg-orange-500/20 hover:border-orange-500/50 transition-all"
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span className="hidden xl:inline">Nouvel Utilisateur</span>
+              </button>
+            )}
+
+            {/* Save Button */}
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className={cn(
+                "flex items-center gap-1.5 px-4 py-2 rounded-xl font-bold text-xs transition-all",
+                saveSuccess
+                  ? "bg-green-500 text-white"
+                  : "bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600",
+                isSaving && "opacity-70 cursor-not-allowed"
+              )}
+              style={!saveSuccess ? { boxShadow: '0 0 20px rgba(249, 115, 22, 0.3)' } : {}}
+            >
+              {saveSuccess ? <Check className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+              {isSaving ? 'Sauvegarde...' : saveSuccess ? 'Sauvegardé !' : 'Sauvegarder'}
+            </button>
+          </div>
+        }
+      />
+
+      {/* Main Content */}
+      <main className="relative z-10 px-6 lg:px-12 py-8 pt-24 w-full">
+        <div className="space-y-6">
+          {/* 1. IDENTITÉ */}
+          <div
+            className="rounded-3xl overflow-hidden relative group animate-fade-in"
+            style={{
+              background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(2, 2, 2, 0.95) 50%, rgba(251, 146, 60, 0.04) 100%)',
+              border: '1px solid rgba(249, 115, 22, 0.15)',
+            }}
+          >
+            <SectionHeader
+              id="identite"
+              icon={User}
+              title="Identité"
+              subtitle="Informations personnelles et coordonnées"
+              accentColor="from-orange-500 to-amber-500"
+              isExpanded={expandedSections.includes('identite')}
+              onToggle={toggleSection}
+            />
+            <IdentiteSection
+              formData={formData}
+              setFormData={setFormData}
+              expanded={expandedSections.includes('identite')}
+            />
+          </div>
+
+          {/* 2. CORPUS */}
+          <div
+            className="rounded-3xl overflow-hidden relative group animate-fade-in"
+            style={{
+              background: 'linear-gradient(135deg, rgba(251, 146, 60, 0.08) 0%, rgba(2, 2, 2, 0.95) 50%, rgba(245, 158, 11, 0.04) 100%)',
+              border: '1px solid rgba(251, 146, 60, 0.15)',
+            }}
+          >
+            <SectionHeader
+              id="corpus"
+              icon={Flame}
+              title="Corpus"
+              subtitle="Physique, Sport & Objectifs"
+              accentColor="from-amber-500 to-yellow-500"
+              isExpanded={expandedSections.includes('corpus')}
+              onToggle={toggleSection}
+            />
+            <CorpusSection
+              formData={formData}
+              setFormData={setFormData}
+              calculatedMetrics={calculatedMetrics}
+              expanded={expandedSections.includes('corpus')}
+            />
+          </div>
+
+          {/* 3. NUTRITION */}
+          <div
+            className="rounded-3xl overflow-hidden relative group animate-fade-in"
+            style={{
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(2, 2, 2, 0.95) 50%, rgba(52, 211, 153, 0.04) 100%)',
+              border: '1px solid rgba(16, 185, 129, 0.15)',
+            }}
+          >
+            <SectionHeader
+              id="nutrition"
+              icon={Utensils}
+              title="Nutrition"
+              subtitle="Préférences alimentaires et objectifs macros"
+              accentColor="from-emerald-500 to-green-500"
+              isExpanded={expandedSections.includes('nutrition')}
+              onToggle={toggleSection}
+            />
+            <NutritionSection
+              formData={formData}
+              setFormData={setFormData}
+              calculatedMetrics={calculatedMetrics}
+              toggleArrayItem={toggleArrayItem}
+              expanded={expandedSections.includes('nutrition')}
+            />
+          </div>
+
+          {/* 4. APPLICATION */}
+          <div
+            className="rounded-3xl overflow-hidden relative group animate-fade-in"
+            style={{
+              background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(2, 2, 2, 0.95) 50%, rgba(167, 139, 250, 0.04) 100%)',
+              border: '1px solid rgba(139, 92, 246, 0.15)',
+            }}
+          >
+            <SectionHeader
+              id="application"
+              icon={Settings}
+              title="Application"
+              subtitle="Thème, langue et paramètres"
+              accentColor="from-violet-500 to-purple-500"
+              isExpanded={expandedSections.includes('application')}
+              onToggle={toggleSection}
+            />
+            <ApplicationSection
+              formData={formData}
+              setFormData={setFormData}
+              expanded={expandedSections.includes('application')}
+            />
+          </div>
+
+          {/* 5. GESTION DES UTILISATEURS */}
+          <div
+            className="rounded-3xl overflow-hidden relative group animate-fade-in"
+            style={{
+              background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(2, 2, 2, 0.95) 50%, rgba(74, 222, 128, 0.04) 100%)',
+              border: '1px solid rgba(34, 197, 94, 0.15)',
+            }}
+          >
+            <SectionHeader
+              id="users"
+              icon={isAdmin ? UserPlus : User}
+              title={isAdmin ? 'Gestion des Utilisateurs' : 'Mon Compte'}
+              subtitle={isAdmin ? 'Créer et gérer les profils utilisateurs (Admin)' : 'Gérer votre profil'}
+              accentColor="from-green-500 to-emerald-500"
+              isExpanded={expandedSections.includes('users')}
+              onToggle={toggleSection}
+            />
+            <UsersSection
+              isAdmin={isAdmin}
+              users={users}
+              currentUserId={currentUserId}
+              setCurrentUserId={setCurrentUserId}
+              currentUserProfile={currentUserProfile}
+              expanded={expandedSections.includes('users')}
+              onShowNewUserModal={() => setShowNewUserModal(true)}
+              refetchUsers={refetchUsers}
+            />
+          </div>
+
+          {/* 6. PROVIDERS */}
+          <div
+            className="rounded-3xl overflow-hidden relative group animate-fade-in"
+            style={{
+              background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(2, 2, 2, 0.95) 50%, rgba(96, 165, 250, 0.04) 100%)',
+              border: '1px solid rgba(59, 130, 246, 0.15)',
+            }}
+          >
+            <SectionHeader
+              id="providers"
+              icon={Settings}
+              title="Providers IA"
+              subtitle="Configurer et tester vos fournisseurs IA"
+              accentColor="from-blue-500 to-cyan-500"
+              isExpanded={expandedSections.includes('providers')}
+              onToggle={toggleSection}
+            />
+            <div className="p-6 space-y-6">
+              {/* Provider Selection */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-slate-300">Sélectionner un Provider</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {providers.map((provider) => (
+                    <button
+                      key={provider}
+                      onClick={() => setSelectedProvider(provider)}
+                      className={`p-4 rounded-xl border transition-all text-left ${
+                        selectedProvider === provider
+                          ? 'border-blue-500/50 bg-blue-500/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <div
+                          className={`w-2 h-2 rounded-full ${
+                            selectedProvider === provider ? 'bg-blue-500' : 'bg-slate-500'
+                          }`}
+                        />
+                        <span className="text-xs font-medium text-slate-200 uppercase tracking-wider">
+                          {provider}
+                        </span>
+                      </div>
+                      {config.apiKeys[provider] ? (
+                        <span className="text-xs text-green-500">Connecté</span>
+                      ) : (
+                        <span className="text-xs text-slate-500">Clé manquante</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Provider Configuration */}
+              {selectedProvider && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-slate-300">
+                    Configuration de {selectedProvider}
+                  </h3>
+
+                  {selectedProvider !== 'local' && selectedProvider !== 'zai' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-xs text-slate-500 block mb-1">API Key</label>
+                        <input
+                          type="password"
+                          value={config.apiKeys[selectedProvider] || ''}
+                          onChange={(e) => setConfig({
+                            ...config,
+                            apiKeys: {
+                              ...config.apiKeys,
+                              [selectedProvider]: e.target.value
+                            }
+                          })}
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500/40"
+                          placeholder="Entrer votre clé API"
+                        />
+                      </div>
+
+                      <button
+                        onClick={() => handleTestProvider(selectedProvider)}
+                        disabled={isTestingProvider === selectedProvider}
+                        className="px-4 py-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-sm rounded-lg hover:bg-blue-500/20 transition-all disabled:opacity-50"
+                      >
+                        {isTestingProvider === selectedProvider ? (
+                          'Test en cours...'
+                        ) : (
+                          'Tester la connexion'
+                        )}
+                      </button>
+
+                      {testResult && (
+                        <div className={`text-sm ${testResult.success ? 'text-green-500' : 'text-red-500'}`}>
+                          {testResult.message}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Function Providers */}
+              {Object.keys(functionProviders).length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-slate-300">Providers par Fonction</h3>
+                  <div className="space-y-2">
+                    {Object.entries(functionProviders).map(([func, provider]) => (
+                      <div key={func} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                        <span className="text-sm text-slate-300">{func}</span>
+                        <select
+                          value={provider}
+                          onChange={(e) => handleSetFunctionProvider(func as any, e.target.value as any)}
+                          className="bg-white/5 border border-white/10 rounded px-2 py-1 text-sm focus:outline-none focus:border-blue-500/40"
+                        >
+                          {providers.map((p) => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                        </select>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Custom Provider */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-slate-300">Provider Personnalisé</h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-slate-500 block mb-1">Nom</label>
+                    <input
+                      type="text"
+                      value={customProviderConfig.name}
+                      onChange={(e) => setCustomProviderConfig({
+                        ...customProviderConfig,
+                        name: e.target.value
+                      })}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500/40"
+                      placeholder="Nom du provider"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-500 block mb-1">Base URL</label>
+                    <input
+                      type="text"
+                      value={customProviderConfig.baseUrl}
+                      onChange={(e) => setCustomProviderConfig({
+                        ...customProviderConfig,
+                        baseUrl: e.target.value
+                      })}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500/40"
+                      placeholder="URL du provider"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleAddProvider}
+                      disabled={!customProviderConfig.name || !customProviderConfig.baseUrl}
+                      className="px-4 py-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 text-sm rounded-lg hover:bg-blue-500/20 transition-all disabled:opacity-50"
+                    >
+                      Ajouter
+                    </button>
+                    {customProviderConfig.name && (
+                      <button
+                        onClick={() => {
+                          setCustomProviderConfig({ name: '', baseUrl: '', models: [] });
+                        }}
+                        className="px-4 py-2 bg-slate-500/10 border border-slate-500/30 text-slate-400 text-sm rounded-lg hover:bg-slate-500/20 transition-all"
+                      >
+                        Annuler
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* 7. IA & API CONFIGURATION */}
+          {canSeeApiSection && (
+            <AIConfigPanel
+              expanded={expandedSections.includes('ai')}
+              onToggle={() => toggleSection('ai')}
+            />
+          )}
+        </div>
+      </main>
+
+      {/* New User Modal */}
+      <NewUserModal
+        show={showNewUserModal}
+        onClose={() => setShowNewUserModal(false)}
+        userName={newUserName}
+        setUserName={setNewUserName}
+        onCreate={handleCreateUser}
+        isLoading={createUserMutation.isPending}
+      />
+    </div>
+  );
+}

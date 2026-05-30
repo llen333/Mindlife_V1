@@ -1,0 +1,7 @@
+{
+  "$schema": "https://convex.dev/schemas/convex.schema.json",
+  "project": "mindlife-local",
+  "team": "local",
+  "prodUrl": "http://localhost:3000",
+  "functions": "convex/"
+}

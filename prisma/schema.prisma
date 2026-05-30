@@ -1,0 +1,843 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model BiometricData {
+  id            String       @id
+  profileId     String
+  date          DateTime     @default(now())
+  weight        Float?
+  muscleMass    Float?
+  bodyFat       Float?
+  hydration     Float?
+  heartRateRest Int?
+  heartRateMax  Int?
+  hrv           Int?
+  sleepScore    Int?
+  recoveryScore Int?
+  fatigueLevel  Int?
+  energyLevel   Int?
+  notes         String?
+  createdAt     DateTime     @default(now())
+  SportProfile  SportProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, date])
+}
+
+model Category {
+  id        String   @id
+  name      String
+  icon      String
+  color     String
+  type      String
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Event     Event[]
+  Goal      Goal[]
+  Habit     Habit[]
+  Note      Note[]
+  Task      Task[]
+
+  @@unique([userId, name])
+}
+
+model ChatMessage {
+  id        String   @id
+  role      String
+  content   String
+  category  String?
+  userId    String
+  createdAt DateTime @default(now())
+}
+
+model DayExercise {
+  id         String     @id
+  dayId      String
+  name       String
+  category   String?
+  sets       Int
+  reps       String
+  weight     Float?
+  weightUnit String     @default("kg")
+  notes      String?
+  order      Int        @default(0)
+  createdAt  DateTime   @default(now())
+  ProgramDay ProgramDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id          String    @id
+  title       String
+  description String?
+  location    String?
+  startAt     DateTime
+  endAt       DateTime?
+  isAllDay    Boolean   @default(false)
+  isRecurring Boolean   @default(false)
+  recurrence  String?
+  reminder    Int?
+  color       String?
+  userId      String
+  categoryId  String?
+  goalId      String?   // Lien vers l'objectif parent (pour les étapes/milestones)
+  milestoneId String?   // ID de l'étape spécifique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Category    Category? @relation(fields: [categoryId], references: [id])
+  Goal        Goal?     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  Task        Task[]
+
+  @@index([userId])
+  @@index([startAt])
+  @@index([goalId])
+}
+
+model Goal {
+  id           String    @id
+  title        String
+  description  String?
+  targetValue  Float?
+  currentValue Float     @default(0)
+  unit         String?
+  startDate    DateTime
+  endDate      DateTime?
+  status       String    @default("active")
+  priority     String    @default("a_planifier")
+  milestones   String?
+  userId       String
+  categoryId   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now())
+  User         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Category     Category? @relation(fields: [categoryId], references: [id])
+  Events       Event[]   // Événements calendrier liés aux étapes
+
+  @@index([userId])
+  @@index([priority])
+  @@index([status])
+}
+
+model Habit {
+  id          String     @id
+  name        String
+  description String?
+  frequency   String     @default("daily")
+  targetDays  String?
+  color       String?
+  icon        String?
+  isActive    Boolean    @default(true)
+  userId      String
+  categoryId  String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @default(now())
+  User        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Category    Category?  @relation(fields: [categoryId], references: [id])
+  HabitLog    HabitLog[]
+}
+
+model HabitLog {
+  id        String   @id
+  date      DateTime
+  completed Boolean  @default(false)
+  note      String?
+  habitId   String
+  userId    String
+  createdAt DateTime @default(now())
+  Habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+}
+
+model JournalEntry {
+  id         String   @id
+  title      String?
+  content    String
+  mood       String?
+  gratitude  String?
+  wins       String?
+  challenges String?
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Meal {
+  id           String   @id
+  userId       String
+  name         String
+  description  String?
+  type         String   @default("lunch")
+  date         DateTime
+  calories     Float?
+  protein      Float?
+  carbs        Float?
+  fat          Float?
+  ingredients  String?
+  instructions String?
+  prepTime     Int?
+  cookTime     Int?
+  servings     Int      @default(1)
+  imageUrl     String?
+  isGenerated  Boolean  @default(false)
+  isFavorite   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([date])
+  @@index([type])
+}
+
+model MealPlan {
+  id            String   @id
+  userId        String
+  date          DateTime
+  meals         String
+  totalCalories Float
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+}
+
+model Note {
+  id         String    @id
+  title      String
+  content    String
+  type       String    @default("text")
+  tags       String?
+  isPinned   Boolean   @default(false)
+  isArchived Boolean   @default(false)
+  userId     String
+  categoryId String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+  User       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Category   Category? @relation(fields: [categoryId], references: [id])
+}
+
+model NutritionProfile {
+  id                 String   @id
+  userId             String   @unique
+  weight             Float
+  height             Float
+  age                Int
+  gender             String
+  activityLevel      String
+  goal               String
+  dietaryPreferences String
+  allergies          String
+  favoriteCuisines   String
+  bmr                Float    @default(0)
+  tdee               Float    @default(0)
+  imc                Float    @default(0)
+  targetCalories     Float    @default(0)
+  protein            Float    @default(0)
+  carbs              Float    @default(0)
+  fat                Float    @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now())
+}
+
+model ProgramDay {
+  id                String           @id
+  programId         String
+  dayOfWeek         Int
+  name              String
+  type              String           @default("workout")
+  description       String?
+  intensity         Int?
+  estimatedDuration Int?
+  createdAt         DateTime         @default(now())
+  DayExercise       DayExercise[]
+  WeeklyProgram     WeeklyProgram    @relation(fields: [programId], references: [id], onDelete: Cascade)
+  WorkoutSession    WorkoutSession[]
+}
+
+model SessionExercise {
+  id             String         @id
+  sessionId      String
+  name           String
+  sets           Int
+  reps           String
+  weight         Float?
+  weightUnit     String         @default("kg")
+  restSeconds    Int?
+  notes          String?
+  completed      Boolean        @default(false)
+  order          Int            @default(0)
+  createdAt      DateTime       @default(now())
+  WorkoutSession WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model SpiritConversation {
+  id            String          @id
+  userId        String
+  archetype     String
+  title         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now())
+  User          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  SpiritMessage SpiritMessage[]
+
+  @@index([userId])
+  @@index([archetype])
+}
+
+model SpiritMessage {
+  id                 String             @id
+  conversationId     String
+  role               String
+  content            String
+  createdAt          DateTime           @default(now())
+  SpiritConversation SpiritConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+model SportGoal {
+  id           String       @id
+  profileId    String
+  name         String
+  description  String?
+  type         String
+  targetValue  Float?
+  currentValue Float        @default(0)
+  unit         String?
+  startDate    DateTime     @default(now())
+  endDate      DateTime?
+  status       String       @default("active")
+  progress     Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now())
+  SportProfile SportProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model SportProfile {
+  id              String           @id
+  userId          String           @unique
+  level           String           @default("intermediate")
+  goals           String?
+  preferredSports String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @default(now())
+  BiometricData   BiometricData[]
+  SportGoal       SportGoal[]
+  User            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  WeeklyProgram   WeeklyProgram[]
+  WorkoutSession  WorkoutSession[]
+}
+
+model Task {
+  id            String    @id
+  title         String
+  description   String?
+  status        String    @default("pending")
+  priority      String    @default("medium")
+  dueDate       DateTime?
+  startDate     DateTime?
+  progress      Int       @default(0)
+  chapters      String?
+  observations  String?
+  createdBy     String    @default("user")
+  addToCalendar Boolean   @default(false)
+  completedAt   DateTime?
+  tags          String?
+  userId        String
+  categoryId    String?
+  eventId       String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  Event         Event?    @relation(fields: [eventId], references: [id])
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Category      Category? @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+}
+
+model User {
+  id                 String               @id
+  email              String               @unique
+  name               String?
+  avatar             String?
+  bio                String?
+  phone              String?
+  birthDate          DateTime?
+  timezone           String               @default("Europe/Paris")
+  country            String?
+  city               String?
+  weight             Float?
+  height             Float?
+  gender             String?
+  mainGoal           String?
+  activityLevel      String?
+  dietaryPreferences String?
+  allergies          String?
+  favoriteCuisines   String?
+  targetCalories     Float?
+  proteinTarget      Float?
+  carbsTarget        Float?
+  fatTarget          Float?
+  sportLevel         String?
+  preferredSports    String?
+  sportGoals         String?
+  bmr                Float?
+  tdee               Float?
+  imc                Float?
+  theme              String?
+  language           String?
+  notifications      Json?
+  preferences        Json?
+  role               String               @default("member")
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @default(now())
+  Category           Category[]
+  Event              Event[]
+  Goal               Goal[]
+  Habit              Habit[]
+  HabitLog           HabitLog[]
+  JournalEntry       JournalEntry[]
+  Note               Note[]
+  SpiritConversation SpiritConversation[]
+  SportProfile       SportProfile?
+  Task               Task[]
+  VoiceMemo          VoiceMemo[]
+  MediaItem          MediaItem[]
+  SleepEntry         SleepEntry[]
+  Transaction        Transaction[]
+  RecurringBill      RecurringBill[]
+  ShoppingList       ShoppingList[]
+  SavingsGoal        SavingsGoal[]
+  Agent              Agent[]
+  AgentSession       AgentSession[] @relation("AgentSessions")
+}
+
+model VoiceMemo {
+  id         String   @id
+  title      String?
+  transcript String?
+  audioUrl   String?
+  duration   Int?
+  category   String?
+  processed  Boolean  @default(false)
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WeeklyProgram {
+  id           String       @id
+  profileId    String
+  name         String
+  weekNumber   Int
+  year         Int
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now())
+  ProgramDay   ProgramDay[]
+  SportProfile SportProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model WeightEntry {
+  id        String   @id
+  userId    String
+  weight    Float
+  date      DateTime
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model WorkoutSession {
+  id              String            @id
+  profileId       String
+  dayId           String?
+  date            DateTime          @default(now())
+  name            String
+  status          String            @default("planned")
+  duration        Int?
+  intensity       Int?
+  volumeLoad      Float?
+  notes           String?
+  rating          Int?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @default(now())
+  SessionExercise SessionExercise[]
+  SportProfile    SportProfile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  ProgramDay      ProgramDay?       @relation(fields: [dayId], references: [id])
+}
+
+// ============================================
+// SYSTÈME D'APPRENTISSAGE MINDLIFE
+// L'application évolue avec l'utilisateur
+// ============================================
+
+/// Patterns de réponses pour les personas (SANS LLM)
+model PersonaPattern {
+  id          String   @id
+  persona     String   // "assistant", "coach", "nutrition", "productivity", "wellness"
+  trigger     String   // Mot-clé ou phrase qui déclenche la réponse
+  triggerType String   @default("keyword") // "keyword", "intent", "regex"
+  response    String   // La réponse à donner
+  context     String?  // Contexte additionnel (JSON)
+  priority    Int      @default(0) // Priorité d'affichage
+  useCount    Int      @default(0) // Nombre d'utilisations
+  avgRating   Float    @default(0) // Note moyenne
+  isActive    Boolean  @default(true)
+  source      String   @default("system") // "system", "user", "scraper", "learned"
+  userId      String?  // Null = global, sinon spécifique à un user
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  @@index([persona])
+  @@index([trigger])
+  @@index([userId])
+}
+
+/// Historique des interactions pour apprentissage
+model InteractionHistory {
+  id           String   @id
+  userId       String
+  persona      String
+  userMessage  String
+  botResponse  String
+  triggerMatch String?  // Quel pattern a été utilisé
+  rating       Int?     // 1-5, null = pas noté
+  source       String   @default("fallback") // "pattern", "fallback", "llm", "scraper"
+  context      String?  // Contexte au moment de l'interaction (JSON)
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([persona])
+  @@index([createdAt])
+}
+
+/// Recettes scrapées (sans LLM)
+model ScrapedRecipe {
+  id              String   @id
+  name            String
+  description     String?
+  ingredients     String   // JSON array
+  instructions    String?
+  prepTime        Int?
+  cookTime        Int?
+  servings        Int?
+  imageUrl        String?
+  sourceUrl       String
+  sourceName      String  // "marmiton", "750g", etc.
+  category        String?
+  tags            String? // JSON array
+  calories        Float?
+  protein         Float?
+  carbs           Float?
+  fat             Float?
+  scrapedAt       DateTime @default(now())
+  lastUpdated     DateTime @default(now())
+  isActive        Boolean  @default(true)
+  userId          String?  // Null = disponible pour tous
+
+  @@index([sourceName])
+  @@index([category])
+  @@unique([name, sourceUrl])
+}
+
+/// Exercices scrapés (sans LLM)
+model ScrapedExercise {
+  id           String   @id
+  name         String
+  muscleGroup  String
+  description  String?
+  instructions String? // JSON array
+  imageUrl     String?
+  videoUrl     String?
+  sourceUrl    String
+  sourceName   String
+  difficulty   String? // "beginner", "intermediate", "advanced"
+  equipment    String? // JSON array
+  scrapedAt    DateTime @default(now())
+  isActive     Boolean  @default(true)
+
+  @@index([muscleGroup])
+  @@unique([name, sourceUrl])
+}
+
+/// État des agents (pour synchronisation)
+model AgentState {
+  id           String   @id
+  agentId      String   @unique
+  agentType    String   // "scraper", "nutrition", "coach", etc.
+  status       String   @default("idle") // "idle", "working", "error"
+  lastActivity DateTime @default(now())
+  currentTask  String?
+  metadata     String?  // JSON
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  @@index([agentType])
+  @@index([status])
+}
+
+/// Messages entre agents (synchronisation)
+model AgentMessage {
+  id          String   @id
+  fromAgent   String
+  toAgent     String?  // Null = broadcast
+  messageType String   // "recipe_scraped", "data_updated", "task_created"
+  payload     String   // JSON
+  processed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([fromAgent])
+  @@index([toAgent])
+  @@index([processed])
+}
+
+/// Préférences utilisateur apprises
+model UserPreference {
+  id           String   @id
+  userId       String
+  category     String   // "nutrition", "sport", "productivity", etc.
+  preference   String   // La préférence identifiée
+  value        String   // Valeur de la préférence
+  confidence   Float    @default(1.0) // 0-1, niveau de certitude
+  source       String   @default("learned") // "explicit", "learned", "inferred"
+  interactions Int      @default(1) // Nombre d'interactions qui confirment
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  @@unique([userId, category, preference])
+  @@index([userId])
+}
+
+/// Données temporaires pour validation (recettes, événements, etc.)
+model TempData {
+  id        String   @id
+  type      String   // "recipe", "event", "task", "goal"
+  data      String   // JSON
+  userId    String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+
+  @@index([type])
+  @@index([createdAt])
+}
+
+/// Médias (vidéos, audio) pour le lecteur global
+model MediaItem {
+  id          String   @id
+  userId      String
+  title       String
+  author      String?
+  type        String   // "video" ou "audio"
+  url         String   // URL YouTube ou autre
+  imageUrl    String?  // Thumbnail
+  description String?
+  source      String?  // "psyche", "growth", "youtube", "upload"
+  category    String?  // "neville-goddard", "carl-jung", etc.
+  duration    Int?     // Durée en secondes
+  isFavorite  Boolean  @default(false)
+  playCount   Int      @default(0)
+  lastPlayed  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([source])
+  @@index([category])
+}
+
+model SleepEntry {
+  id        String   @id
+  userId    String
+  date      DateTime @default(now())
+  bedtime   DateTime
+  wakeup    DateTime
+  duration  Float
+  quality   Int
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([date])
+}
+
+model Transaction {
+  id          String   @id
+  userId      String
+  amount      Float
+  type        String   // "income" ou "expense"
+  category    String
+  description String
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RecurringBill {
+  id           String    @id
+  userId       String
+  name         String
+  amount       Float
+  category     String
+  frequency    String
+  nextDueDate  DateTime
+  status       String    @default("active") // "active" ou "paused"
+  lastPaidDate DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now())
+  User         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ShoppingList {
+  id            String         @id
+  userId        String
+  name          String
+  budget        Float
+  scheduledDate DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now())
+  User          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items         ShoppingItem[]
+
+  @@index([userId])
+}
+
+model ShoppingItem {
+  id             String       @id
+  listId         String
+  name           String
+  quantity       Int          @default(1)
+  estimatedPrice Float        @default(0)
+  actualPrice    Float?
+  category       String?
+  isChecked      Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now())
+  ShoppingList   ShoppingList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@index([listId])
+}
+
+model SavingsGoal {
+  id            String    @id
+  userId        String
+  name          String
+  targetAmount  Float
+  currentAmount Float     @default(0)
+  deadline      DateTime?
+  icon          String    @default("🏦")
+  color         String    @default("emerald")
+  status        String    @default("active")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now())
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ============================================
+// AGENTS IA SYSTEM
+// Gestion des agents, mémoire et sessions
+// ============================================
+
+/// Configuration et état de chaque agent IA
+model Agent {
+  id              String   @id
+  userId          String
+  name            String   // "Psyché", "Coach Sportif", "Nutrition", etc.
+  role            String   // "psychologist", "coach", "nutrition", "oracle", "organization"
+  systemPrompt    String   // Instructions système personnalisées
+  provider        String   @default("zai") // "zai", "groq", "openai", etc.
+  model           String   @default("glm-4.5-air") // Modèle LLM spécifique
+  mode            String   @default("smart") // "rapide", "smart", "economique"
+  isActive        Boolean  @default(true)
+  tone            String?  // Personnalité/ton de l'agent
+  capabilities    String?  // JSON array des capacités (web_search, data_access, etc.)
+  metadata        String?  // JSON additionnelles
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  AgentSession    AgentSession[]
+  AgentMemory     AgentMemory[]
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([role])
+}
+
+/// Mémoire persistante de l'agent
+model AgentMemory {
+  id              String   @id
+  agentId         String
+  type            String   // "context", "preference", "learning", "style", "mtm_emotion", "mtm_pattern", "mtm_reflection", "ltm_identity", "ltm_milestone", "ltm_value"
+  key             String   // Clé pour la récupération
+  value           String   // Valeur textuelle
+  importance      Int      @default(1) // 1-5, pour la priorisation
+  memoryLevel     String   @default("mtm") // "stm", "mtm", "ltm"
+  emotion         String?  // "joie", "tristesse", "colere", "peur", "surprise", "confiance", "anticipation", null
+  tags            String?  // JSON array ["tag1","tag2"]
+  refCount        Int      @default(0) // Nombre de references pour promotion
+  isArchived      Boolean  @default(false)
+  sourceSessionId String?
+  sourceTitle     String?  // Titre du fichier .md importé
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  Agent           Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([agentId, memoryLevel])
+  @@index([agentId, importance])
+}
+
+/// Sessions de conversation avec un agent
+model AgentSession {
+  id              String   @id
+  agentId         String
+  userId          String
+  title           String   @default("Session")
+  summary         String?
+  messageCount    Int      @default(0)
+  rating          Int?     // 1-5 user rating
+  isArchived      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  AgentMessage    AgentChatMessage[]
+  Agent           Agent    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  User            User     @relation("AgentSessions", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+/// Messages dans une session avec un agent
+model AgentChatMessage {
+  id          String   @id
+  sessionId   String
+  role        String   // "user" ou "assistant"
+  content     String
+  metadata    String?  // JSON (citations, sources, etc.)
+  createdAt   DateTime @default(now())
+  AgentSession AgentSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
