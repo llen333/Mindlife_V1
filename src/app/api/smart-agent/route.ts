@@ -1,11 +1,9 @@
 /**
- * API Smart Agent - VRAIES ACTIONS avec Convex
- * Utilise Convex quand disponible, fallback vers Prisma
+ * API Smart Agent - Actions directes via Prisma
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getConvexClient, isConvexAvailable, CONVEX_FUNCTIONS } from '@/lib/convex-server';
 import * as cheerio from 'cheerio';
 import { aiChat } from '@/lib/ai-provider';
 import { AIFunction } from '@/lib/ai-config';
@@ -143,7 +141,7 @@ function extractDateFromQuery(query: string): { date: Date | null; time: string 
 }
 
 // ============================================
-// CRÉATION D'ÉVÉNEMENT (Convex ou Prisma)
+// CRÉATION D'ÉVÉNEMENT
 // ============================================
 
 async function createEventDirectly(userId: string, title: string, date: Date, time: string | null): Promise<{ success: boolean; message: string; eventId?: string }> {
@@ -167,31 +165,6 @@ async function createEventDirectly(userId: string, title: string, date: Date, ti
       minute: '2-digit',
     });
 
-    // Essayer Convex d'abord
-    const convexClient = getConvexClient();
-    if (convexClient) {
-      try {
-        const eventId = await convexClient.mutation(CONVEX_FUNCTIONS.createEvent, {
-          title: title || 'Rendez-vous',
-          startAt: eventDate.getTime(),
-          endAt: endAt.getTime(),
-          userId,
-          color: '#10B981',
-          isAllDay: false,
-        });
-
-        console.log(`[EVENT] Créé dans Convex: ${eventId}`);
-        return {
-          success: true,
-          message: `✅ **Rendez-vous créé !**\n\n📅 **${title}**\n🗓️ ${formattedDate}\n\nAjouté à ton calendrier !`,
-          eventId,
-        };
-      } catch (convexError) {
-        console.error('[EVENT] Erreur Convex, fallback Prisma:', convexError);
-      }
-    }
-
-    // Fallback Prisma
     const eventId = `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     await db.event.create({
@@ -206,8 +179,6 @@ async function createEventDirectly(userId: string, title: string, date: Date, ti
       },
     });
 
-    console.log(`[EVENT] Créé dans Prisma: ${eventId}`);
-
     return {
       success: true,
       message: `✅ **Rendez-vous créé !**\n\n📅 **${title}**\n🗓️ ${formattedDate}\n\nAjouté à ton calendrier !`,
@@ -220,37 +191,17 @@ async function createEventDirectly(userId: string, title: string, date: Date, ti
 }
 
 // ============================================
-// CRÉATION DE TÂCHE (Convex ou Prisma)
+// CRÉATION DE TÂCHE
 // ============================================
 
 async function createTask(userId: string, title: string): Promise<{ success: boolean; message: string }> {
   try {
-    // Essayer Convex d'abord
-    const convexClient = getConvexClient();
-    if (convexClient) {
-      try {
-        const taskId = await convexClient.mutation(CONVEX_FUNCTIONS.createTask, {
-          title,
-          userId,
-          status: 'pending',
-          priority: 'medium',
-        });
-
-        console.log(`[TASK] Créée dans Convex: ${taskId}`);
-        return { success: true, message: `✅ **Tâche créée !**\n\n📋 "${title}"\n\nAjoutée à ta liste !` };
-      } catch (convexError) {
-        console.error('[TASK] Erreur Convex, fallback Prisma:', convexError);
-      }
-    }
-
-    // Fallback Prisma
     const taskId = `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     await db.task.create({
       data: { id: taskId, userId, title, status: 'pending', priority: 'medium' },
     });
 
-    console.log(`[TASK] Créée dans Prisma: ${taskId}`);
     return { success: true, message: `✅ **Tâche créée !**\n\n📋 "${title}"\n\nAjoutée à ta liste !` };
   } catch (error) {
     console.error('[TASK] Erreur:', error);
@@ -259,38 +210,17 @@ async function createTask(userId: string, title: string): Promise<{ success: boo
 }
 
 // ============================================
-// CRÉATION D'OBJECTIF (Convex ou Prisma)
+// CRÉATION D'OBJECTIF
 // ============================================
 
 async function createGoal(userId: string, title: string): Promise<{ success: boolean; message: string }> {
   try {
-    // Essayer Convex d'abord
-    const convexClient = getConvexClient();
-    if (convexClient) {
-      try {
-        const goalId = await convexClient.mutation(CONVEX_FUNCTIONS.createGoal, {
-          title,
-          userId,
-          status: 'active',
-          priority: 'a_planifier',
-          startDate: Date.now(),
-        });
-
-        console.log(`[GOAL] Créé dans Convex: ${goalId}`);
-        return { success: true, message: `🎯 **Objectif créé !**\n\n**"${title}"**\n\nTu peux le retrouver dans ta liste d'objectifs !` };
-      } catch (convexError) {
-        console.error('[GOAL] Erreur Convex, fallback Prisma:', convexError);
-      }
-    }
-
-    // Fallback Prisma
     const goalId = `goal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
     await db.goal.create({
       data: { id: goalId, userId, title, status: 'active', priority: 'a_planifier', startDate: new Date() },
     });
 
-    console.log(`[GOAL] Créé dans Prisma: ${goalId}`);
     return { success: true, message: `🎯 **Objectif créé !**\n\n**"${title}"**\n\nTu peux le retrouver dans ta liste d'objectifs !` };
   } catch (error) {
     console.error('[GOAL] Erreur:', error);
@@ -415,24 +345,7 @@ async function validateAndSave(tempId: string, userId: string): Promise<{ succes
     const data = JSON.parse(temp.data);
 
     if (temp.type === 'recipe') {
-      // Essayer Convex d'abord
-      const convexClient = getConvexClient();
-      if (convexClient) {
-        try {
-          await convexClient.mutation(CONVEX_FUNCTIONS.createRecipe, {
-            name: data.name || 'Recette',
-            ingredients: data.ingredients || [],
-            instructions: data.steps?.join('\n\n') || '',
-            sourceUrl: data.sourceUrl || '',
-            sourceName: 'Marmiton',
-            userId,
-          });
-        } catch (e) {
-          console.error('[VALIDATE] Erreur Convex, fallback Prisma');
-        }
-      }
-
-      // Aussi sauvegarder dans Prisma
+      // Sauvegarder dans Prisma
       await db.scrapedRecipe.create({
         data: {
           id: `saved-${Date.now()}`,
@@ -476,7 +389,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[API] Message: "${message}" (persona: ${persona})`);
-    console.log(`[API] Convex disponible: ${isConvexAvailable()}`);
 
     const ctx = conversationId ? conversationContexts.get(conversationId) || {} : {};
     const { intent } = detectIntent(message);
