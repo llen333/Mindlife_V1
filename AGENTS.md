@@ -52,7 +52,8 @@ src/
 - Scraping de recettes (Marmiton, 750g) fonctionnel
 
 ### ⚠️ Problèmes connus
-- **200 erreurs TypeScript restantes** dans les composants (API routes: 0 erreur)
+- **124 erreurs TypeScript restantes** dans les composants (API routes: 0 erreur)
+  - Session 30/05 : 333 → 124 (209 corrigées)
   - `NutritionPage.tsx` (9) — `RefObject<null>` vs `RefObject`
   - `HabitsPanel.tsx` (8) — `never` type sur `habit.logs`
   - `CalendarPage.tsx` (9) — `never` type sur tableaux
@@ -66,7 +67,7 @@ src/
 - **LLM Provider** : configuré pour z.ai (`glm-4.5-air`). Changements de provider récents (Google) ont causé des bugs.
 
 ### 🚧 En cours
-- Palier 1 : stabilisation TypeScript (API routes: ✅ 0 erreur, composants: ⏳ 200 restantes)
+- Palier 1 : stabilisation TypeScript (API routes: ✅ 0 erreur, composants: ⏳ 124 restantes)
 - Fix de l'affichage des repas (grille hebdo)
 
 ### 📋 TODO global (priorisé)
@@ -122,9 +123,16 @@ src/
 | `src/app/api/test-tools/route.ts` | Suppression import mort `callOpenAICompatibleDirect` | Export supprimé |
 | `src/app/api/nutrition-profile/route.ts` | Ajout `id` dans upsert.create et create | Erreur TS |
 | `src/lib/nutrition-fallback.ts` | Export de `Ingredient` | Nécessaire pour `GeneratedMeal` |
-| `src/components/nutrition/hooks/useNutritionData.ts` | Fallback vers `allMeals` | Grille hebdo vide |
-| `src/lib/stores/nutritionStore.ts` | `loadNutritionData` ne charge plus les repas | Évite les overwrites |
-| `src/components/agents/AgentsDashboard.tsx` | Fix `</div>` manquant + guards null | Page blanche (500) |
+| `src/lib/hooks.ts` | Supprimé (legacy) | Masquait `hooks/index.ts` dans la résolution TS |
+| `src/components/nutrition/NutritionPage.tsx` | RefObject null + Meal types + Date string | 11 erreurs TS |
+| `src/components/HabitsPanel.tsx` | `const days = []` → typé | 11 erreurs `never` |
+| `src/components/calendar/CalendarPage.tsx` | `const x = []` → typé (Date[], string[], ReactNode[]) | 9 erreurs `never` |
+| `src/components/goals/GoalModal.tsx` | Champs supprimés (completedMilestones, actions) | 6 erreurs types |
+| `src/components/sport/components/HistoryPanel.tsx` | Tableaux typés | 6 erreurs `never` |
+| `src/components/growth/sections/PsycheSection.tsx` | `c.masteryLevel ?? 0` | 4 erreurs undefined |
+| `src/components/growth/components/RoutineBuilder.tsx` | `routine.type` → champ réel + `icon` → champ réel | 5 erreurs types |
+| `src/components/goals/GoalCard.tsx` | `goal.category` → `goal.categoryId` | 2 erreurs |
+| `src/components/goals/GoalsPanel.tsx` | `milestone.isCompleted` → `milestone.completed` | 2 erreurs |
 
 ## 6. CONTEXTE CRITIQUE (ce que les LLMs oublient toujours)
 
