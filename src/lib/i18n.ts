@@ -23,7 +23,8 @@ export type TranslationKey =
   | 'totalTasks' | 'dailyHabits' | 'categories' | 'streak' | 'day'
   // Tasks
   | 'addTask' | 'taskTitle' | 'taskDescription' | 'priority' | 'status' | 'dueDate'
-  | 'all' | 'searchTasks' | 'noTasks' | 'newTask' | 'description' | 'lowPriority' | 'mediumPriority' | 'highPriority'
+  | 'all' | 'searchTasks' | 'noTasks' | 'newTask' | 'description' | 'low' | 'medium' | 'high' | 'lowPriority' | 'mediumPriority' | 'highPriority'
+  | 'editTask' | 'deleteTask' | 'markComplete' | 'filterByCategory' | 'sortByPriority'
   | 'tasksTitle' | 'tasksSubtitle' | 'goalsTitle' | 'goalsSubtitle' | 'notesTitle' | 'notesSubtitle'
   // Goals
   | 'addGoal' | 'goalTitle' | 'progress' | 'startDate' | 'endDate' | 'targetValue'
@@ -46,11 +47,11 @@ export type TranslationKey =
   // Voice
   | 'startRecording' | 'stopRecording' | 'recordNote' | 'recordIdea' | 'recordTask'
   // Common
-  | 'save' | 'cancel' | 'delete' | 'edit' | 'add' | 'search' | 'filter' | 'sort'
+  | 'save' | 'cancel' | 'cancelled' | 'delete' | 'edit' | 'add' | 'search' | 'filter' | 'sort'
   | 'noResults' | 'loading' | 'error' | 'success' | 'confirm' | 'yes' | 'no'
   | 'lifeFlow' | 'personalLifeManagement' | 'builtWith';
 
-const translations: Record<Language, Record<TranslationKey, string>> = {
+const translations: Record<Language, Partial<Record<TranslationKey, string>>> = {
   fr: {
     // Navigation
     dashboard: 'Tableau de bord',
