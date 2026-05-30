@@ -102,7 +102,7 @@ export function GoalsPanel({ goals, onAddGoal, onEditGoal }: GoalsPanelProps) {
                         }
                       `}
                     >
-                      {milestone.isCompleted ? '✓ ' : ''}{milestone.title}
+                      {milestone.completed ? '✓ ' : ''}{milestone.title}
                     </div>
                   ))}
                   {goal.milestones.length > 4 && (

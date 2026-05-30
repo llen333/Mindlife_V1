@@ -609,7 +609,7 @@ function extractDateFromQuery(query: string): { date: string | null; time: strin
 }
 
 function findAvailableSlots(existingEvents: any[], date: string): { time: string }[] {
-  const slots = [];
+  const slots: { time: string }[] = [];
   const hours = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'];
   
   for (const hour of hours) {

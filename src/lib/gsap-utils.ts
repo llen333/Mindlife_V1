@@ -229,7 +229,7 @@ export function useGSAPShimmer() {
   useEffect(() => {
     if (ref.current) {
       gsap.to(ref.current, {
-        x: ['-100%', '100%'],
+        x: ['-100%', '100%'] as any,
         duration: 1.5,
         repeat: -1,
         ease: 'none'

@@ -16,7 +16,14 @@ import {
 } from 'recharts';
 import { Plus, Flame, Sparkles, TrendingUp, Calendar, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Meal, NutritionProfile } from '../types';
+import type { Meal } from '../types';
+
+interface NutritionProfile {
+  targetCalories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+}
 
 interface DailyTrackingProps {
   meals: Meal[];
@@ -41,12 +48,12 @@ export function DailyTracking({
 
   // 1. Calculate today's values
   const todayStr = new Date().toDateString();
-  const todayMeals = meals.filter(
+  const todayMeals = (meals as any[]).filter(
     (m) => new Date(m.date).toDateString() === todayStr
   );
 
   const consumed = todayMeals.reduce(
-    (acc, m) => {
+    (acc: any, m: any) => {
       acc.calories += m.calories || 0;
       acc.protein += m.protein || 0;
       acc.carbs += m.carbs || 0;
@@ -69,11 +76,11 @@ export function DailyTracking({
     d.setDate(d.getDate() - (6 - i)); // From 6 days ago to today
     
     const dayStr = d.toDateString();
-    const dayMeals = meals.filter(
-      (m) => new Date(m.date).toDateString() === dayStr
+    const dayMeals = (meals as any[]).filter(
+      (m: any) => new Date(m.date).toDateString() === dayStr
     );
     
-    const dayCalories = dayMeals.reduce((sum, m) => sum + (m.calories || 0), 0);
+    const dayCalories = dayMeals.reduce((sum: number, m: any) => sum + (m.calories || 0), 0);
     const dayLabel = d.toLocaleDateString('fr-FR', { weekday: 'short' });
     
     return {

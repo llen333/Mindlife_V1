@@ -102,9 +102,9 @@ type CombinedState = {
 
   // Navigation
   activePanel: string;
-  selectedCategory: string;
+  selectedCategory: string | null;
   setActivePanel: (panel: string) => void;
-  setSelectedCategory: (category: string) => void;
+  setSelectedCategory: (category: string | null) => void;
 
   // Categories
   categories: Category[];

@@ -237,10 +237,10 @@ export function useUpdateProfile() {
 
       // Mise à jour optimiste
       if (previousProfile) {
-        queryClient.setQueryData<UserFullProfile>(userKeys.profile(currentUserId), {
+        queryClient.setQueryData(userKeys.profile(currentUserId), {
           ...previousProfile,
           ...newData,
-        });
+        } as any);
       }
 
       return { previousProfile };

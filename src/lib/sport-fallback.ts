@@ -513,7 +513,7 @@ export function generateQuickWorkout(duration: number = 30): WorkoutProgram {
   const allExercises = Object.values(EXERCISES).flat();
   const numExercises = Math.floor(duration / 5); // ~5 min par exercice
   
-  const selected = [];
+  const selected: Exercise[] = [];
   const usedGroups = new Set<string>();
   
   while (selected.length < numExercises && selected.length < allExercises.length) {

@@ -69,9 +69,10 @@ const CalendarPanel = memo(function CalendarPanel() {
     if (newEvent.title.trim() && selectedDate) {
       addEvent({
         ...newEvent,
-        date: selectedDate,
+        date: selectedDate.toISOString().split('T')[0],
         color: getCategoryInfo(newEvent.categoryId).color,
-      })
+        startAt: new Date(selectedDate.toISOString().split('T')[0] + 'T' + newEvent.startTime).toISOString(),
+      } as any)
       setNewEvent({
         title: '',
         description: '',
@@ -85,7 +86,7 @@ const CalendarPanel = memo(function CalendarPanel() {
 
   const selectedDateEvents = selectedDate ? getEventsForDate(selectedDate) : []
 
-  const calendarDays = []
+  const calendarDays: (Date | null)[] = []
   for (let i = 0; i < firstDayOfMonth; i++) {
     calendarDays.push(null)
   }
@@ -203,12 +204,12 @@ const CalendarPanel = memo(function CalendarPanel() {
                 return <div key={`empty-${index}`} className="h-12" />
               }
               
-              const dayEvents = getEventsForDate(date)
+              const dayEvents = getEventsForDate(date as Date)
               const hasEvents = dayEvents.length > 0
               
               return (
                 <button
-                  key={date.toISOString()}
+                  key={(date as Date).toISOString()}
                   onClick={() => {
                     setSelectedDate(date)
                     setShowAddForm(false)
@@ -227,7 +228,7 @@ const CalendarPanel = memo(function CalendarPanel() {
                     }
                   `}
                 >
-                  <span>{date.getDate()}</span>
+                  <span>{(date as Date).getDate()}</span>
                   {hasEvents && (
                     <div className="flex gap-1 absolute bottom-1">
                       {dayEvents.slice(0, 3).map((e, i) => (

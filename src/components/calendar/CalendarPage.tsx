@@ -458,23 +458,28 @@ export default function CalendarPage() {
 
   // Create new event
   const handleCreateEvent = async (eventData: Partial<Event> & { createTask?: boolean }) => {
+    const dateStr = selectedDate || todayStr;
+    const startTime = eventData.startTime || '09:00';
+    const endTime = eventData.endTime || '10:00';
     addEvent({
       title: eventData.title || 'Nouvel événement',
-      date: selectedDate || todayStr,
-      startTime: eventData.startTime || '09:00',
-      endTime: eventData.endTime || '10:00',
+      date: dateStr,
+      startTime,
+      endTime,
       isAllDay: eventData.isAllDay || false,
       categoryId: eventData.categoryId || 'cat-professional',
       color: eventData.color || 'emerald',
-      priority: eventData.priority || 'medium',
+      priority: eventData.priority || 'medium' as const,
       description: eventData.description,
       location: eventData.location,
       participants: eventData.participants,
       reminder: eventData.reminder,
       reminderEnabled: eventData.reminderEnabled,
       tags: eventData.tags,
-      createdBy: 'user',
-    });
+      createdBy: 'user' as const,
+      startAt: new Date(dateStr + 'T' + startTime).toISOString(),
+      endAt: new Date(dateStr + 'T' + endTime).toISOString(),
+    } as any);
 
     if (eventData.createTask) {
       await addTask({
@@ -486,7 +491,9 @@ export default function CalendarPage() {
         categoryId: eventData.categoryId || 'cat-professional',
         createdBy: 'user',
         addToCalendar: false,
-      });
+        createdAt: new Date().toISOString(),
+        progress: 0,
+      } as any);
     }
 
     setShowCreateModal(false);

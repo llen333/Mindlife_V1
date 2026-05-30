@@ -468,7 +468,7 @@ export default function ManagementPage() {
                     lists={shoppingLists} 
                     onToggleItem={toggleShoppingItem}
                     onAddList={() => openModal('shopping')}
-                    onAddItem={addShoppingItem}
+                    onAddItem={addShoppingItem as any}
                   />
                 </motion.div>
               )}
@@ -499,7 +499,7 @@ export default function ManagementPage() {
                   className="space-y-8"
                 >
                   <WasteDetector detections={wasteDetections} onResolve={resolveWaste} />
-                  <AIProjections insights={aiInsights} onMarkRead={markInsightRead} />
+                  <AIProjections {...{ insights: aiInsights, onMarkRead: markInsightRead } as any} />
                 </motion.div>
               )}
             </AnimatePresence>

@@ -150,7 +150,7 @@ export default function MindLifeDashboard() {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           status: 'pending',
-        } as Task);
+        } as unknown as Task);
       }
       
       setShowEventModal(false);
@@ -349,7 +349,7 @@ export default function MindLifeDashboard() {
                       return (
                         <div 
                           key={goal.id} 
-                          onClick={() => handleJournalItemClick({ type: 'goal', data: goal })}
+                          onClick={() => handleJournalItemClick({ type: 'goal', data: goal } as any)}
                           className="group cursor-pointer p-3 rounded-xl hover:bg-white/[0.03] border border-transparent hover:border-violet-500/20 transition-all animate-slide-in"
                           style={{ animationDelay: `${index * 50}ms` }}
                         >
@@ -407,14 +407,7 @@ export default function MindLifeDashboard() {
         />
       )}
 
-      {showEventModal && (
-        <CreateEventModal
-          isOpen={showEventModal}
-          onClose={() => setShowEventModal(false)}
-          onSave={handleSaveEvent}
-          eventData={selectedEvent}
-        />
-      )}
+      {showEventModal && <CreateEventModal {...{isOpen: showEventModal, onClose: () => setShowEventModal(false), onSave: handleSaveEvent, eventData: selectedEvent} as any} />}
     </div>
   );
 }

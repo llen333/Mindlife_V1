@@ -105,7 +105,7 @@ export function useNutritionData(currentUserId: string): UseNutritionDataReturn 
             isToday: new Date(m.date).toDateString() === new Date().toDateString(),
             date: m.date,
           }));
-          setMeals(apiMeals);
+          setMeals(apiMeals as any);
         } else {
           setMeals([]);
         }
@@ -267,7 +267,7 @@ export function useNutritionData(currentUserId: string): UseNutritionDataReturn 
 
   // Computed displayed meals with filtering
   const displayedMeals = (() => {
-    let meals: Meal[] = [];
+    let meals: any[] = [];
     const dates = getWeekDates(weekOffset);
     
     if (isPreviewMode && previewMeals.length > 0) {

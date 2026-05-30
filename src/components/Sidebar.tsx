@@ -177,7 +177,7 @@ export default function Sidebar() {
               {categories.map((category) => (
                 <button
                   key={category.id}
-                  onClick={() => setSelectedCategory(selectedCategory === category.id ? null : category.id)}
+                  onClick={() => setSelectedCategory(selectedCategory === category.id ? null : category.id as any)}
                   onMouseEnter={(e) => handleButtonHover(e.currentTarget, true)}
                   onMouseLeave={(e) => handleButtonHover(e.currentTarget, false)}
                   onMouseDown={(e) => handleButtonTap(e.currentTarget, true)}

@@ -59,7 +59,7 @@ const pageVariants = {
   exit: { opacity: 0, y: -10 }
 };
 
-const pageTransition = {
+const pageTransition: any = {
   type: 'tween',
   ease: 'easeOut',
   duration: 0.25

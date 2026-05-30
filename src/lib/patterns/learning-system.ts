@@ -300,7 +300,7 @@ export async function seedDefaultPatterns(): Promise<number> {
           data: {
             id: `pattern-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             ...pattern,
-          },
+          } as any,
         });
         count++;
       }

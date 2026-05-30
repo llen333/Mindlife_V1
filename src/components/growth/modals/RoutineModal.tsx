@@ -22,7 +22,7 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
   const [type, setType] = useState<'morning' | 'evening'>('morning');
   const [description, setDescription] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
-  const [steps, setSteps] = useState<{ name: string; duration: number; icon: string }[]>([]);
+  const [steps, setSteps] = useState<{ title: string; duration: number }[]>([]);
   const [newStepName, setNewStepName] = useState('');
   const [newStepDuration, setNewStepDuration] = useState(5);
   const [saving, setSaving] = useState(false);
@@ -31,14 +31,13 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
   useEffect(() => {
     const timer = setTimeout(() => {
       if (routine) {
-        setName(routine.name);
-        setType(routine.type as 'morning' | 'evening');
+        setName(routine.title);
+        setType(routine.category as 'morning' | 'evening');
         setDescription(routine.description || '');
-        setScheduledTime(routine.scheduledTime || '');
+        setScheduledTime(routine.timeOfDay || '');
         setSteps((routine.steps as RoutineStep[]).map(s => ({
-          name: s.name,
+          title: s.title,
           duration: s.duration,
-          icon: s.icon || '🎯',
         })));
       } else {
         setName('');
@@ -71,9 +70,8 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
   const addStep = () => {
     if (newStepName.trim()) {
       setSteps([...steps, {
-        name: newStepName.trim(),
+        title: newStepName.trim(),
         duration: newStepDuration,
-        icon: STEP_ICONS[steps.length % STEP_ICONS.length],
       }]);
       setNewStepName('');
       setNewStepDuration(5);
@@ -89,9 +87,8 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
     setName(template.name);
     setType(templateType);
     setSteps(template.steps.map(s => ({
-      name: s.name,
+      title: s.name,
       duration: s.duration,
-      icon: s.icon || '🎯',
     })));
   };
 
@@ -101,16 +98,20 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
     setSaving(true);
     
     await onSubmit({
-      name,
-      type,
+      title: name,
+      category: type,
       description,
+      frequency: 'daily',
+      timeOfDay: scheduledTime,
+      duration: steps.reduce((sum, s) => sum + s.duration, 0),
       steps: steps.map((s, i) => ({
-        name: s.name,
+        title: s.title,
         duration: s.duration,
         order: i,
-        icon: s.icon,
+        isCompleted: false,
       })),
-      scheduledTime,
+      icon: '🎯',
+      color: '#f59e0b',
     });
     
     setSaving(false);

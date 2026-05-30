@@ -7,7 +7,8 @@ import type {
   PsycheResource,
   MentalCard,
   SpiritualityPractice,
-  GrowthCategory 
+  GrowthCategory,
+  HabitCategory
 } from './types';
 import { 
   Sun, Moon, Brain, Target, TrendingUp, Users, DollarSign, 
@@ -853,3 +854,78 @@ export const statusColors = {
   'exploring': '#8b5cf6',
   'integrated': '#10b981',
 };
+
+// ============================================
+// MODALS EXPORTS (stubs pour compilation)
+// ============================================
+
+export const HABIT_ICONS = ['🎯', '💪', '📚', '🧠', '❤️', '💰', '🧘', '🎨'];
+export const HABIT_COLORS = ['#ef4444', '#f97316', '#f59e0b', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
+
+export const CATEGORY_LABELS: Record<HabitCategory, string> = {
+  health: 'Santé',
+  mind: 'Esprit',
+  productivity: 'Productivité',
+  learning: 'Apprentissage',
+  relationships: 'Relations',
+  finance: 'Finance',
+  spirit: 'Spiritualité',
+  creativity: 'Créativité',
+};
+
+export const CATEGORY_ICONS: Record<HabitCategory, string> = {
+  health: '❤️',
+  mind: '🧠',
+  productivity: '⚡',
+  learning: '📚',
+  relationships: '👥',
+  finance: '💰',
+  spirit: '✨',
+  creativity: '🎨',
+};
+
+export const CATEGORY_COLORS: Record<HabitCategory, string> = {
+  health: '#ef4444',
+  mind: '#8b5cf6',
+  productivity: '#f59e0b',
+  learning: '#3b82f6',
+  relationships: '#ec4899',
+  finance: '#10b981',
+  spirit: '#6366f1',
+  creativity: '#f97316',
+};
+
+export const ROUTINE_TEMPLATES = [
+  {
+    id: 'morning-5am',
+    title: 'Routine 5AM',
+    description: 'Morning routine pour maximiser la journée',
+    steps: [
+      { title: 'Hydratation', duration: 2, icon: '💧' },
+      { title: 'Méditation', duration: 15, icon: '🧘' },
+      { title: 'Journaling', duration: 20, icon: '✍️' },
+      { title: 'Exercice', duration: 30, icon: '🏃' },
+    ],
+  },
+  {
+    id: 'evening-winddown',
+    title: 'Evening Wind-Down',
+    description: 'Routine soir pour un sommeil optimal',
+    steps: [
+      { title: 'Review journée', duration: 10, icon: '📝' },
+      { title: 'Gratitude', duration: 5, icon: '🙏' },
+      { title: 'Lecture', duration: 20, icon: '📖' },
+      { title: 'Digital Detox', duration: 10, icon: '📵' },
+    ],
+  },
+];
+
+export const XP_LEVELS = [
+  { level: 1, xp: 0, title: 'Débutant' },
+  { level: 2, xp: 100, title: 'Apprenti' },
+  { level: 3, xp: 250, title: 'Intermédiaire' },
+  { level: 4, xp: 500, title: 'Avancé' },
+  { level: 5, xp: 1000, title: 'Expert' },
+  { level: 6, xp: 2000, title: 'Maître' },
+  { level: 7, xp: 5000, title: 'Légende' },
+];

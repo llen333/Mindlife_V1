@@ -122,7 +122,7 @@ export function NutritionSection({
                   {/* Content */}
                   <div className="relative z-10 flex flex-col items-center justify-center h-full gap-1">
                     <span className="text-2xl">{opt.icon}</span>
-                    <span className="text-xs font-medium text-white/90">{opt.label}</span>
+                    <span className="text-xs font-medium text-white/90">{opt.value}</span>
                   </div>
                   
                   {/* Check icon */}
@@ -180,7 +180,7 @@ export function NutritionSection({
                   {/* Content */}
                   <div className="relative z-10 flex flex-col items-center justify-center h-full gap-1">
                     <span className="text-2xl">{opt.icon}</span>
-                    <span className="text-xs font-medium text-white/90">{opt.label}</span>
+                    <span className="text-xs font-medium text-white/90">{opt.value}</span>
                   </div>
                   
                   {/* Check icon */}
@@ -224,7 +224,7 @@ export function NutritionSection({
                   {opt.image && (
                     <Image
                       src={opt.image}
-                      alt={opt.label || opt.value || "Nutrition option"}
+                      alt={opt.value || "Nutrition option"}
                       fill
                       className={cn(
                         "object-cover transition-all",
@@ -242,7 +242,7 @@ export function NutritionSection({
                   {/* Content */}
                   <div className="relative z-10 flex flex-col items-center justify-end h-full pb-2 gap-0.5">
                     <span className="text-xl">{opt.icon}</span>
-                    <span className="text-xs font-bold text-white">{opt.label}</span>
+                    <span className="text-xs font-bold text-white">{opt.value}</span>
                     {opt.flag && (
                       <span className="text-[10px] opacity-70">{opt.flag}</span>
                     )}

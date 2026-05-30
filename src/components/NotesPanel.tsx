@@ -44,7 +44,7 @@ const NotesPanel = memo(function NotesPanel() {
 
   const handleAddNote = () => {
     if (newNote.title.trim()) {
-      addNote(newNote)
+      addNote(newNote as any)
       setNewNote({
         title: '',
         content: '',
@@ -205,7 +205,7 @@ const NotesPanel = memo(function NotesPanel() {
                 </p>
                 <div className="flex items-center gap-2 text-xs text-white/30">
                   <Clock className="w-3 h-3" />
-                  <span>{formatDate(note.updatedAt)}</span>
+                  <span>{formatDate((note as any).updatedAt || note.createdAt)}</span>
                 </div>
               </button>
             )
@@ -229,7 +229,7 @@ const NotesPanel = memo(function NotesPanel() {
                     {getCategoryInfo(selectedNoteData.categoryId).icon} {getCategoryInfo(selectedNoteData.categoryId).name}
                   </Badge>
                   <span className="text-sm text-white/40">
-                    Updated {formatDate(selectedNoteData.updatedAt)}
+                    Updated {formatDate((selectedNoteData as any).updatedAt || selectedNoteData.createdAt)}
                   </span>
                 </div>
                 <div className="flex gap-2">

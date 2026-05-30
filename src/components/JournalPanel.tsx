@@ -28,7 +28,7 @@ const JournalPanel = memo(function JournalPanel() {
   const [newEntry, setNewEntry] = useState({
     title: '',
     content: '',
-    mood: 'good' as const,
+    mood: 'good' as 'good' | 'great' | 'neutral' | 'bad' | 'terrible',
   })
 
   // Refs pour animations GSAP
@@ -40,7 +40,7 @@ const JournalPanel = memo(function JournalPanel() {
   const moodStatsRef = useRef<HTMLDivElement>(null)
 
   const filteredEntries = journalEntries.filter(entry =>
-    entry.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (entry.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     entry.content.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -48,8 +48,9 @@ const JournalPanel = memo(function JournalPanel() {
     if (newEntry.title.trim() && newEntry.content.trim()) {
       addJournalEntry({
         ...newEntry,
-        date: new Date(),
-      })
+        mood: newEntry.mood as string,
+        date: new Date().toISOString(),
+      } as any)
       setNewEntry({
         title: '',
         content: '',
@@ -61,7 +62,7 @@ const JournalPanel = memo(function JournalPanel() {
 
   const selectedEntryData = journalEntries.find(e => e.id === selectedEntry)
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
       month: 'long',
@@ -70,7 +71,7 @@ const JournalPanel = memo(function JournalPanel() {
     })
   }
 
-  const formatShortDate = (date: Date) => {
+  const formatShortDate = (date: string | Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -78,8 +79,9 @@ const JournalPanel = memo(function JournalPanel() {
   }
 
   // Get mood stats
-  const moodCounts = journalEntries.reduce((acc, entry) => {
-    acc[entry.mood] = (acc[entry.mood] || 0) + 1
+  const moodCounts = (journalEntries || []).reduce((acc, entry) => {
+    const m = entry.mood || 'neutral'
+    acc[m] = (acc[m] || 0) + 1
     return acc
   }, {} as Record<string, number>)
 

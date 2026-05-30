@@ -309,7 +309,8 @@ const TasksPanel = memo(function TasksPanel() {
               isAllDay: false,
               categoryId: taskData.categoryId || 'cat-professional',
               color: category?.color || 'emerald',
-            })
+              startAt: new Date(startDateStr + 'T09:00').toISOString(),
+            } as any)
           }
         } else if (!taskData.addToCalendar && existingTask?.eventId) {
           // Si on désactive le calendrier, supprimer l'événement lié
@@ -353,7 +354,8 @@ const TasksPanel = memo(function TasksPanel() {
             isAllDay: false,
             categoryId: taskData.categoryId || 'cat-professional',
             color: category?.color || 'emerald',
-          })
+            startAt: new Date(startDateStr + 'T09:00').toISOString(),
+          } as any)
           // Stocker l'eventId sur la tâche
           if (createdEvent?.id) {
             await updateTask(newTaskId, { eventId: createdEvent.id })

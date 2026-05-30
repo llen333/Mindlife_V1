@@ -90,6 +90,7 @@ export function useTaskWithEvent() {
             categoryId: task.categoryId || 'cat-professional',
             color: eventData.color,
             createdAt: new Date().toISOString(),
+            startAt: new Date(startDateStr + 'T' + eventData.startTime).toISOString(),
           };
         }
       }

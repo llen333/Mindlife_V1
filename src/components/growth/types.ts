@@ -1,6 +1,124 @@
 // GrowthPage Types - Développement Personnel Complet
 
 // ============================================
+// INPUT TYPES (pour modals)
+// ============================================
+
+export interface CreateHabitInput {
+  title: string;
+  description: string;
+  icon: string;
+  color: string;
+  category: HabitCategory;
+  frequency: 'daily' | 'weekly' | 'custom';
+  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'any';
+}
+
+export interface CreateRoutineInput {
+  title: string;
+  description: string;
+  category: 'morning' | 'evening' | 'custom';
+  frequency: 'daily' | 'weekly' | 'custom';
+  timeOfDay?: string;
+  duration: number;
+  steps: RoutineStep[];
+  icon: string;
+  color: string;
+}
+
+export interface CreateGoalInput {
+  title: string;
+  description: string;
+  category: GrowthCategory;
+  type: 'outcome' | 'process' | 'identity';
+  targetValue?: number;
+  unit?: string;
+  milestones: Milestone[];
+  identityStatement?: string;
+  deadline?: Date;
+}
+
+export interface CreateJournalInput {
+  title: string;
+  content: string;
+  mood: 'neutral' | 'great' | 'good' | 'bad' | 'terrible';
+  gratitude?: string[];
+  wins?: string[];
+  challenges?: string[];
+}
+
+export interface GrowthHabit {
+  id: string;
+  title: string;
+  description: string;
+  category: HabitCategory;
+  frequency: 'daily' | 'weekly' | 'custom';
+  timeOfDay: 'morning' | 'afternoon' | 'evening' | 'any';
+  icon: string;
+  color: string;
+  currentStreak: number;
+  bestStreak: number;
+  totalCompletions: number;
+  createdAt: Date;
+  lastCompletedAt?: Date;
+}
+
+export type HabitCategory = 
+  | 'health' 
+  | 'mind' 
+  | 'productivity' 
+  | 'learning' 
+  | 'relationships' 
+  | 'finance' 
+  | 'spirit' 
+  | 'creativity';
+
+export interface GrowthJournal {
+  id: string;
+  date: Date;
+  title: string;
+  content: string;
+  mood: 'neutral' | 'great' | 'good' | 'bad' | 'terrible';
+  gratitude?: string[];
+  wins?: string[];
+  challenges?: string[];
+  createdAt: Date;
+}
+
+export interface GrowthStats {
+  totalHabits: number;
+  completedToday: number;
+  currentStreak: number;
+  bestStreak: number;
+  totalCompletions: number;
+}
+
+export interface IdentityStatement {
+  id: string;
+  statement: string;
+  category: GrowthCategory;
+  isActive: boolean;
+}
+
+export interface WeeklyReview {
+  id: string;
+  weekStart: Date;
+  weekEnd: Date;
+  wins: string[];
+  challenges: string[];
+  lessons: string[];
+  nextWeek: string[];
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlockedAt?: Date;
+}
+
+// ============================================
 // SECTION 1: ÉVOLUTIONS ET ROUTINES
 // ============================================
 
@@ -56,6 +174,7 @@ export interface Milestone {
   id: string;
   title: string;
   dueDate?: string;
+  targetValue?: number;
   completed: boolean;
   order: number;
 }

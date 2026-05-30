@@ -1,6 +1,15 @@
 // useVoiceRecording - Hook for managing voice recording
 'use client';
 
+declare var SpeechRecognition: any;
+declare var webkitSpeechRecognition: any;
+declare var SpeechRecognitionEvent: any;
+declare var SpeechRecognitionErrorEvent: any;
+
+type SpeechRecognitionType = typeof SpeechRecognition;
+type SpeechRecognitionEventType = typeof SpeechRecognitionEvent;
+type SpeechRecognitionErrorEventType = typeof SpeechRecognitionErrorEvent;
+
 import { useState, useRef, useCallback } from 'react';
 import type { ChatMessage } from '../types';
 
@@ -33,7 +42,7 @@ export function useVoiceRecording(
   const streamRef = useRef<MediaStream | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const isRecordingActiveRef = useRef(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionType | null>(null);
   const transcriptRef = useRef<string>('');
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -48,8 +57,8 @@ export function useVoiceRecording(
   const hasWebSpeechAPI = useCallback((): boolean => {
     if (typeof window === 'undefined') return false;
     const w = window as typeof window & {
-      SpeechRecognition?: new () => SpeechRecognition;
-      webkitSpeechRecognition?: new () => SpeechRecognition;
+      SpeechRecognition?: new () => SpeechRecognitionType;
+      webkitSpeechRecognition?: new () => SpeechRecognitionType;
     };
     return !!(w.SpeechRecognition || w.webkitSpeechRecognition);
   }, []);
@@ -139,8 +148,8 @@ export function useVoiceRecording(
   // Web Speech API recording
   const startWebSpeechRecording = useCallback(() => {
     const w = window as typeof window & {
-      SpeechRecognition?: new () => SpeechRecognition;
-      webkitSpeechRecognition?: new () => SpeechRecognition;
+      SpeechRecognition?: new () => SpeechRecognitionType;
+      webkitSpeechRecognition?: new () => SpeechRecognitionType;
     };
 
     const SpeechRecognition = w.SpeechRecognition || w.webkitSpeechRecognition;
@@ -172,7 +181,7 @@ export function useVoiceRecording(
       }, 500);
     };
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
+    recognition.onresult = (event: SpeechRecognitionEventType) => {
       lastTranscriptTime = Date.now();
       let interimTranscript = '';
 
@@ -190,7 +199,7 @@ export function useVoiceRecording(
       setAudioLevel(30 + Math.random() * 40);
     };
 
-    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEventType) => {
       console.error('Web Speech error:', event.error);
       if (silenceTimeoutRef.current) {
         clearInterval(silenceTimeoutRef.current);

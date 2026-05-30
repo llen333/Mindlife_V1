@@ -36,7 +36,7 @@ const GoalsPanel = memo(function GoalsPanel() {
         ...newGoal,
         progress: 0,
         milestones: newGoal.milestones || [],
-      })
+      } as any)
       setNewGoal({
         title: '',
         description: '',
@@ -60,7 +60,7 @@ const GoalsPanel = memo(function GoalsPanel() {
   const toggleMilestone = (goalId: string, milestoneId: string) => {
     const goal = goals.find(g => g.id === goalId)
     if (goal) {
-      const updatedMilestones = goal.milestones.map(m => 
+      const updatedMilestones = (goal.milestones || []).map(m => 
         m.id === milestoneId ? { ...m, completed: !m.completed } : m
       )
       const completedCount = updatedMilestones.filter(m => m.completed).length
@@ -206,7 +206,7 @@ const GoalsPanel = memo(function GoalsPanel() {
           return (
             <GoalCard 
               key={goal.id} 
-              goal={goal} 
+              goal={goal as any} 
               category={category} 
               onDelete={() => deleteGoal(goal.id)}
               onToggleMilestone={(milestoneId) => toggleMilestone(goal.id, milestoneId)}

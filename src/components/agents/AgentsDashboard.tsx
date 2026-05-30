@@ -1157,12 +1157,12 @@ export default function AgentsDashboard() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-[10px] text-slate-500 uppercase block mb-1">Nom</label>
-                  <input value={editAgent.name} onChange={e => setEditAgent(p => ({ ...p, name: e.target.value }))}
+                  <input value={editAgent.name} onChange={e => setEditAgent(p => ({ ...p, name: e.target.value } as Agent))}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none" />
                 </div>
                 <div>
                   <label className="text-[10px] text-slate-500 uppercase block mb-1">Rôle</label>
-                  <select value={editAgent.role} onChange={e => setEditAgent(p => ({ ...p, role: e.target.value }))}
+                  <select value={editAgent.role} onChange={e => setEditAgent(p => ({ ...p, role: e.target.value } as Agent))}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none">
                     {Object.entries(ROLE_META).map(([key, meta]) => (
                       <option key={key} value={key}>{meta.label}</option>
@@ -1172,12 +1172,12 @@ export default function AgentsDashboard() {
               </div>
               <div>
                 <label className="text-[10px] text-slate-500 uppercase block mb-1">System Prompt</label>
-                <textarea value={editAgent.systemPrompt || ''} onChange={e => setEditAgent(p => ({ ...p, systemPrompt: e.target.value }))}
+                <textarea value={editAgent.systemPrompt || ''} onChange={e => setEditAgent(p => ({ ...p, systemPrompt: e.target.value } as Agent))}
                   rows={4} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none resize-none" />
               </div>
               <div>
                 <label className="text-[10px] text-slate-500 uppercase block mb-1">Ton</label>
-                <input value={editAgent.tone || ''} onChange={e => setEditAgent(p => ({ ...p, tone: e.target.value }))}
+                <input value={editAgent.tone || ''} onChange={e => setEditAgent(p => ({ ...p, tone: e.target.value } as Agent))}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none" />
               </div>
             </div>

@@ -184,7 +184,7 @@ export default function DailyExpenses({
           return (
             <div
               key={cat.id}
-              onClick={() => setSelectedCategory(selectedCategory === cat.id ? null : cat.id)}
+              onClick={() => setSelectedCategory(selectedCategory === cat.id ? null as any : cat.id)}
               className={cn(
                 "p-3 rounded-xl border cursor-pointer transition-all",
                 selectedCategory === cat.id

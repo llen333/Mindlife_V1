@@ -502,7 +502,7 @@ export default function GoalsPage() {
     const goal = goals.find(g => g.id === goalId);
     if (!goal) return;
 
-    const updatedMilestones = goal.milestones.map((m, i) =>
+    const updatedMilestones = (goal.milestones || []).map((m, i) =>
       i === milestoneIndex ? { ...m, completed: !m.completed } : m
     );
 
@@ -514,21 +514,15 @@ export default function GoalsPage() {
     try {
       await updateGoal(goalId, {
         milestones: updatedMilestones,
-        completedMilestones: completedCount,
-        totalMilestones: totalCount,
-        milestonesProgress: newProgress,
         progress: newProgress,
-      });
+      } as any);
 
       if (selectedGoal?.id === goalId) {
         setSelectedGoal({
           ...goal,
           milestones: updatedMilestones,
-          completedMilestones: completedCount,
-          totalMilestones: totalCount,
-          milestonesProgress: newProgress,
           progress: newProgress,
-        });
+        } as any);
       }
     } catch (error) {
       console.error('Error updating milestone:', error);
@@ -590,7 +584,7 @@ export default function GoalsPage() {
 
       if (res.ok) {
         const data = await res.json();
-        updateGoal(data.goal);
+        updateGoal(data.goal.id, data.goal);
         setSelectedGoal(data.goal);
         setIsEditingGoal(false);
 
@@ -699,7 +693,7 @@ export default function GoalsPage() {
       <main className="p-6 space-y-4">
         {/* ========== BARRE DE FILTRES - UNE SEULE LIGNE ========== */}
         <motion.div
-          {...fadeInDown}
+          {...fadeInDown as any}
           className="flex flex-wrap items-center gap-3"
         >
           {/* Périodes */}
@@ -803,7 +797,7 @@ export default function GoalsPage() {
                     ) : (
                       filteredGoals.map((goal, index) => {
                         const cat = getCategoryBadge(goal.categoryId);
-                        const prio = getPriorityBadge(goal.priority);
+                        const prio = getPriorityBadge(goal.priority || '');
                         const nextMilestone = getNextMilestone(goal);
 
                         return (

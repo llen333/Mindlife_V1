@@ -737,8 +737,8 @@ export function PsycheResourceModal({ isVisible, onClose, resource }: PsycheReso
               <span 
                 className="px-3 py-1 rounded-full text-xs"
                 style={{ 
-                  backgroundColor: `${statusColors[resource.status]}20`,
-                  color: statusColors[resource.status]
+                  backgroundColor: `${statusColors[resource.status ?? 'to-read']}20`,
+                  color: statusColors[resource.status ?? 'to-read']
                 }}
               >
                 {resource.status === 'to-explore' ? 'À explorer' : 

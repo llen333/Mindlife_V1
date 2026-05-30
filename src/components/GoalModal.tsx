@@ -194,7 +194,7 @@ export default function GoalModal({ isOpen, onClose, onSave, onDelete, goal, cat
       }, 0);
     }
 
-    closeAnimationRef.current = tl;
+    closeAnimationRef.current = tl as any;
   }, [onClose]);
 
   // Validate & save

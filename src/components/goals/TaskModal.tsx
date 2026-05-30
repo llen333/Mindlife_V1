@@ -114,7 +114,7 @@ export default function TaskModal({ isOpen, onClose, onSave, task }: TaskModalPr
     if (task) {
       setTitle(task.title);
       setDescription(task.description || '');
-      setPriority(task.priority);
+      setPriority(task.priority as 'low' | 'medium' | 'high');
       setCategoryId(task.categoryId);
       setStartDate(task.startDate ? task.startDate.split('T')[0] : '');
       setDueDate(task.dueDate ? task.dueDate.split('T')[0] : '');
