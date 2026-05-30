@@ -7,7 +7,7 @@ import { Clock } from 'lucide-react';
 import { inspirationRecipes } from '../constants';
 
 interface NutritionInspirationsProps {
-  inspirationsRef: React.RefObject<HTMLDivElement>;
+  inspirationsRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function NutritionInspirations({ inspirationsRef }: NutritionInspirationsProps) {

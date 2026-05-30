@@ -32,7 +32,7 @@ const HabitsPanel = memo(function HabitsPanel() {
   const weekDays = getLast7Days()
 
   function getLast7Days() {
-    const days = []
+    const days: Array<{ date: string; dayName: string; dayNum: number; isToday: boolean }> = []
     for (let i = 6; i >= 0; i--) {
       const date = new Date()
       date.setDate(date.getDate() - i)

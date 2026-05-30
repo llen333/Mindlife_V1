@@ -22,8 +22,8 @@ interface RecipeModalProps {
   onStartSpeaking: (meal: Meal, stepIndex: number) => void;
   onChangeVoice: (voiceId: VoiceId) => void;
   onSpeakRecipe: () => void;
-  recipeModalRef: React.RefObject<HTMLDivElement>;
-  recipeModalContentRef: React.RefObject<HTMLDivElement>;
+  recipeModalRef: React.RefObject<HTMLDivElement | null>;
+  recipeModalContentRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function RecipeModal({

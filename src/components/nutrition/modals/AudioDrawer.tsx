@@ -24,8 +24,8 @@ interface AudioDrawerProps {
   onChangeReadingMode: (mode: ReadingModeId) => void;
   onNextStep: () => void;
   onPrevStep: () => void;
-  audioDrawerRef: React.RefObject<HTMLDivElement>;
-  soundwaveRef: React.RefObject<HTMLDivElement>;
+  audioDrawerRef: React.RefObject<HTMLDivElement | null>;
+  soundwaveRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function AudioDrawer({

@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils';
 import { periodOptions } from '../constants';
 
 interface NutritionStatsProps {
-  statsCardsRef: React.RefObject<HTMLDivElement>;
-  progressBarRef: React.RefObject<HTMLDivElement>;
+  statsCardsRef: React.RefObject<HTMLDivElement | null>;
+  progressBarRef: React.RefObject<HTMLDivElement | null>;
   budget: { total: number; remaining: number };
   prepTime: { total: number; saved: number };
   macros: { calories: number; protein: number; carbs: number; fat: number };

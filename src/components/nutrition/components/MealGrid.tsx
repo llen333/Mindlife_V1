@@ -24,7 +24,7 @@ interface MealGridProps {
   onCancelPreview: () => void;
   onSetWeekOffset: (offset: number) => void;
   onSetMealTypeFilter: (filter: MealTypeFilter) => void;
-  previewBannerRef: React.RefObject<HTMLDivElement>;
+  previewBannerRef: React.RefObject<HTMLDivElement | null>;
   onDeleteMeal?: (id: string) => void;
 }
 

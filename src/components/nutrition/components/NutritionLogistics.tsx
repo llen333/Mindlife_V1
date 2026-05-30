@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import type { CartItem } from '../types';
 
 interface NutritionLogisticsProps {
-  logisticsRef: React.RefObject<HTMLDivElement>;
+  logisticsRef: React.RefObject<HTMLDivElement | null>;
   shoppingList: CartItem[];
   getPeriodMultiplier: () => number;
   getPeriodLabel: () => string;

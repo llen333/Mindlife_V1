@@ -243,7 +243,7 @@ export default function NutritionPage() {
 
           {/* Suivi Quotidien & Historique */}
           <DailyTracking
-            meals={meals}
+            meals={meals as any}
             nutritionProfile={nutritionProfile}
             onOpenManualEntry={() => setIsManualMealOpen(true)}
             onDeleteMeal={deleteMeal}
@@ -332,16 +332,14 @@ export default function NutritionPage() {
           await addMeal({
             name: mealData.name,
             type: mealData.type,
-            date: new Date(mealData.date),
+            date: new Date(mealData.date).toISOString(),
             calories: mealData.calories,
             protein: mealData.protein,
             carbs: mealData.carbs,
             fat: mealData.fat,
-            servings: 1,
             description: 'Saisie manuelle',
             imageUrl: '',
             ingredients: [],
-            instructions: '',
           });
         }}
       />
