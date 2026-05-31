@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllProviders, getProvider, addCustomProvider, removeCustomProvider, testProviderConnection, fetchProviderModels } from '@/lib/provider-registry';
+import { getAllProviders, getProvider, addCustomProvider, removeCustomProvider, testProviderConnection, fetchProviderModels, updateProviderModel } from '@/lib/provider-registry';
 
 export async function GET() {
   try {
@@ -50,13 +50,13 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, message: 'Provider inconnu' }, { status: 400 });
           }
           const result = await testProviderConnection(provider.baseUrl, envKey, model || provider.defaultModel);
-          return NextResponse.json({ success: true, ...result });
+          return NextResponse.json(result);
         }
         if (!baseUrl || !apiKey) {
           return NextResponse.json({ success: false, error: 'baseUrl et apiKey requis' }, { status: 400 });
         }
         const result = await testProviderConnection(baseUrl, apiKey, model);
-        return NextResponse.json({ success: true, ...result });
+        return NextResponse.json(result);
       }
 
       case 'models': {
@@ -73,13 +73,22 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ success: false, models: [], message: 'Provider inconnu' });
           }
           const result = await fetchProviderModels(provider.baseUrl, envKey);
-          return NextResponse.json({ success: true, ...result });
+          return NextResponse.json(result);
         }
         if (!baseUrl || !apiKey) {
           return NextResponse.json({ success: false, error: 'baseUrl et apiKey requis' }, { status: 400 });
         }
         const result = await fetchProviderModels(baseUrl, apiKey);
-        return NextResponse.json({ success: true, ...result });
+        return NextResponse.json(result);
+      }
+
+      case 'set-model': {
+        const { id: providerId, model } = body;
+        if (!providerId || !model) {
+          return NextResponse.json({ success: false, error: 'id et model requis' }, { status: 400 });
+        }
+        await updateProviderModel(providerId, model);
+        return NextResponse.json({ success: true, message: `Modèle changé pour ${model}` });
       }
 
       default:

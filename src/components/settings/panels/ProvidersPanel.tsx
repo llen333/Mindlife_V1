@@ -17,6 +17,7 @@ interface ProviderDef {
   defaultModel?: string;
   isBuiltin: boolean;
   hasKey?: boolean;
+  keyEnv?: string;
 }
 
 const PROVIDER_COLORS: Record<string, string> = {
@@ -41,6 +42,7 @@ export default function ProvidersPanel() {
   const [testResults, setTestResults] = useState<Record<string, { success: boolean; message: string }>>({});
   const [loadingModelsId, setLoadingModelsId] = useState<string | null>(null);
   const [fetchedModels, setFetchedModels] = useState<Record<string, string[]>>({});
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ id: '', name: '', baseUrl: '', defaultModel: '', apiKey: '' });
@@ -74,7 +76,7 @@ export default function ProvidersPanel() {
   useEffect(() => { loadProviders(); loadLocalKeys(); }, []);
 
   const canTest = (p: ProviderDef): boolean => {
-    return p.isBuiltin ? p.hasKey : !!apiKeys[p.id];
+    return p.isBuiltin ? !!p.hasKey : !!apiKeys[p.id];
   };
 
   const handleTest = async (p: ProviderDef) => {
@@ -120,6 +122,18 @@ export default function ProvidersPanel() {
     setLoadingModelsId(null);
   };
 
+  const handleSetModel = async (providerId: string, model: string) => {
+    const res = await fetch('/api/providers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'set-model', id: providerId, model }),
+    });
+    if (res.ok) {
+      setProviders(prev => prev.map(p => p.id === providerId ? { ...p, defaultModel: model } : p));
+      setSelectedModel(null);
+    }
+  };
+
   const handleAddProvider = async () => {
     if (!addForm.id || !addForm.name || !addForm.baseUrl) return;
     setSaving(true);
@@ -154,7 +168,7 @@ export default function ProvidersPanel() {
     }
   };
 
-  const connectedCount = providers.filter(p => p.isBuiltin ? p.hasKey || getEffectiveKey(p) : getEffectiveKey(p)).length;
+  const connectedCount = providers.filter(p => p.isBuiltin ? p.hasKey || !!apiKeys[p.id] : !!apiKeys[p.id]).length;
 
   return (
     <div className="space-y-6">
@@ -233,8 +247,8 @@ export default function ProvidersPanel() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {providers.map(p => {
-            const effectiveKey = getEffectiveKey(p);
-            const isConnected = p.isBuiltin ? p.hasKey || !!effectiveKey : !!effectiveKey;
+            const localKey = apiKeys[p.id] || '';
+            const isConnected = p.isBuiltin ? p.hasKey || !!localKey : !!localKey;
             const hasTestResult = testResults[p.id];
 
             return (
@@ -274,9 +288,33 @@ export default function ProvidersPanel() {
 
                 <div className="space-y-1 mb-4 text-xs text-white/40 font-mono">
                   <div className="truncate" title={p.baseUrl}>{p.baseUrl || '(aucune)'}</div>
-                  {p.defaultModel && <div>Modèle: {p.defaultModel}</div>}
-                  {fetchedModels[p.id] && fetchedModels[p.id].length > 0 && (
-                    <div className="text-white/30">+ {fetchedModels[p.id].length - (p.defaultModel ? 1 : 0)} autres modèles</div>
+                  {p.defaultModel && (
+                    <div>
+                      <button onClick={() => setSelectedModel(selectedModel === p.id ? null : p.id)}
+                        className="flex items-center gap-1 text-white/60 hover:text-white transition-colors">
+                        Modèle: <span className="text-white/80 underline decoration-dotted underline-offset-2">{p.defaultModel}</span>
+                        {(fetchedModels[p.id]?.length ?? 0) > 1 && (
+                          selectedModel === p.id ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                        )}
+                      </button>
+                      {selectedModel === p.id && fetchedModels[p.id] && fetchedModels[p.id].length > 1 && (
+                        <div className="mt-1.5 max-h-40 overflow-y-auto rounded-lg bg-white/5 border border-white/10 p-1 space-y-0.5">
+                          {fetchedModels[p.id].map(m => (
+                            <button key={m}
+                              onClick={() => handleSetModel(p.id, m)}
+                              className={cn(
+                                "w-full text-left px-2.5 py-1.5 rounded-md text-xs transition-colors",
+                                m === p.defaultModel
+                                  ? "text-violet-300 bg-violet-500/10"
+                                  : "text-white/50 hover:text-white hover:bg-white/5"
+                              )}>
+                              {m === p.defaultModel && <Check className="w-2.5 h-2.5 inline mr-1.5" />}
+                              {m}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
 
@@ -285,7 +323,7 @@ export default function ProvidersPanel() {
                     <div className="relative">
                       <input
                         type={showKeys[p.id] ? 'text' : 'password'}
-                        value={effectiveKey}
+                        value={localKey}
                         onChange={e => saveLocalKey(p.id, e.target.value)}
                         placeholder="Clé API..."
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-violet-500/40"

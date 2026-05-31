@@ -58,7 +58,22 @@ async function saveCustomProviders(providers: StoredProvider[]): Promise<void> {
 async function loadCustomProvidersFile(): Promise<any> {
   try {
     return JSON.parse(await fs.readFile(PROVIDERS_FILE, 'utf-8'));
-  } catch { return { builtin: BUILTIN_PROVIDERS, custom: [] }; }
+  } catch { return { builtin: BUILTIN_PROVIDERS, custom: [], modelOverrides: {} }; }
+}
+
+export async function updateProviderModel(id: string, model: string): Promise<void> {
+  const existing = await loadCustomProvidersFile();
+  const overrides = existing.modelOverrides || {};
+  overrides[id] = model;
+  existing.modelOverrides = overrides;
+  existing.updatedAt = new Date().toISOString();
+  await ensureDataDir();
+  await fs.writeFile(PROVIDERS_FILE, JSON.stringify(existing, null, 2), 'utf-8');
+  customProvidersCache = null;
+}
+
+function getModelOverrides(existing: any): Record<string, string> {
+  return existing.modelOverrides || {};
 }
 
 function getEnvKey(providerId: string): string {
@@ -68,7 +83,13 @@ function getEnvKey(providerId: string): string {
 
 export async function getAllProviders(): Promise<ProviderDef[]> {
   const custom = await loadCustomProviders();
-  return [...BUILTIN_PROVIDERS, ...custom];
+  const existing = await loadCustomProvidersFile();
+  const overrides = getModelOverrides(existing);
+  const applyOverride = (p: ProviderDef): ProviderDef => {
+    if (overrides[p.id]) return { ...p, defaultModel: overrides[p.id] };
+    return p;
+  };
+  return [...BUILTIN_PROVIDERS.map(applyOverride), ...custom.map(applyOverride)];
 }
 
 export async function getProvider(id: string): Promise<StoredProvider | undefined> {
