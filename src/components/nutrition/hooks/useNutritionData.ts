@@ -265,34 +265,72 @@ export function useNutritionData(currentUserId: string): UseNutritionDataReturn 
     /* eslint-enable react-hooks/set-state-in-effect */
   }, [loadAvailableWeeks]);
 
-  // Computed displayed meals with filtering
+  // Computed displayed meals with filtering - VERSION FINALE CORRIGÉE
   const displayedMeals = (() => {
     let meals: any[] = [];
     const dates = getWeekDates(weekOffset);
-    
+
+    // 1. Déterminer quels repas utiliser
     if (isPreviewMode && previewMeals.length > 0) {
       meals = previewMeals;
     } else if (savedMeals.length > 0) {
+      // Filtrer les repas sauvegardés pour cette semaine
       const weekStart = new Date(dates[0]);
       weekStart.setHours(0, 0, 0, 0);
       const weekEnd = new Date(dates[6]);
       weekEnd.setHours(23, 59, 59, 999);
-      
+
       const weekMeals = savedMeals.filter(m => {
         const d = new Date(m.date);
         return d >= weekStart && d <= weekEnd;
       });
-      
-      meals = weekMeals.length > 0 ? weekMeals : allMeals;
+
+      // Utiliser les repas sauvegardés s'ils existent
+      if (weekMeals.length > 0) {
+        meals = weekMeals;
+      } else {
+        // Utiliser les repas par défaut
+        meals = allMeals;
+      }
     } else {
+      // Utiliser les repas par défaut
       meals = allMeals;
     }
-    
-    if (mealTypeFilter === 'all') {
-      return meals;
+
+    // 2. Filtrer par type de repas si demandé
+    if (mealTypeFilter !== 'all') {
+      const filteredMeals = meals.filter(meal => {
+        const mealType = meal.type || 'lunch';
+        return mealType === mealTypeFilter;
+      });
+
+      // Si après filtrage on n'a pas 7 repas, compléter avec les repas par défaut
+      if (filteredMeals.length < 7) {
+        const defaultMealsForType = allMeals.filter(meal =>
+          (meal.type || 'lunch') === mealTypeFilter
+        );
+
+        // Fusionner en évitant les doublons
+        const existingIds = new Set(filteredMeals.map(m => m.id));
+        const additionalMeals = defaultMealsForType.filter(m => !existingIds.has(m.id));
+
+        return [...filteredMeals, ...additionalMeals].slice(0, 7);
+      }
+
+      // Limiter à 7 repas pour éviter trop d'éléments
+      return filteredMeals.slice(0, 7);
     }
-    
-    return meals.filter(meal => meal.type === mealTypeFilter);
+
+    // 3. Pour 'all', TOUJOURS retourner 14 repas (7 lunch + 7 dinner)
+    // Si on n'a pas assez de repas, compléter avec les repas par défaut
+    if (meals.length < 14) {
+      const existingIds = new Set(meals.map(m => m.id));
+      const additionalMeals = allMeals.filter(m => !existingIds.has(m.id));
+      meals = [...meals, ...additionalMeals];
+    }
+
+    // Retourner exactement 14 repas pour 'all'
+    return meals.slice(0, 14);
   })();
 
   return {

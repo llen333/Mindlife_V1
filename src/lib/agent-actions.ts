@@ -15,7 +15,8 @@ export type AgentAction =
   | 'check_availability' 
   | 'create_task' 
   | 'create_goal'
-  | 'scrape_content';
+  | 'scrape_content'
+  | 'generate_meal';
 
 export interface ActionResult {
   success: boolean;
@@ -768,6 +769,217 @@ export async function validateAndSave(tempId: string, userId: string): Promise<A
     return {
       success: false,
       message: "Erreur lors de la sauvegarde. Réessaie.",
+    };
+  }
+}
+
+// ============================================
+// ACTIONS AGENTS AVEC API LOCALE
+// ============================================
+
+// Créer une tâche via l'API locale
+export async function createTask(taskData: {
+  title: string;
+  description?: string;
+  priority?: string;
+  status?: string;
+  dueDate?: string;
+  startDate?: string;
+  category?: string;
+  userId?: string;
+}): Promise<ActionResult> {
+  try {
+    const userId = taskData.userId || 'mindlife-user';
+    
+    const response = await fetch('http://localhost:3090/api/tasks', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: taskData.title,
+        description: taskData.description || '',
+        priority: taskData.priority || 'medium',
+        status: taskData.status || 'pending',
+        dueDate: taskData.dueDate,
+        startDate: taskData.startDate,
+        categoryId: taskData.category,
+        userId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    const task = await response.json();
+    
+    return {
+      success: true,
+      message: `✅ Tâche créée : "${taskData.title}"`,
+      data: task,
+    };
+  } catch (error) {
+    console.error('Error creating task:', error);
+    return {
+      success: false,
+      message: `Erreur lors de la création de la tâche: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+    };
+  }
+}
+
+// Créer un objectif via l'API locale
+export async function createGoal(goalData: {
+  title: string;
+  description?: string;
+  targetValue?: number;
+  unit?: string;
+  startDate?: string;
+  endDate?: string;
+  category?: string;
+  priority?: string;
+  userId?: string;
+}): Promise<ActionResult> {
+  try {
+    const userId = goalData.userId || 'mindlife-user';
+    
+    const response = await fetch('http://localhost:3090/api/goals', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: goalData.title,
+        description: goalData.description || '',
+        targetValue: goalData.targetValue,
+        unit: goalData.unit,
+        startDate: goalData.startDate,
+        endDate: goalData.endDate,
+        categoryId: goalData.category,
+        priority: goalData.priority || 'medium',
+        userId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    const goal = await response.json();
+    
+    return {
+      success: true,
+      message: `✅ Objectif créé : "${goalData.title}"`,
+      data: goal,
+    };
+  } catch (error) {
+    console.error('Error creating goal:', error);
+    return {
+      success: false,
+      message: `Erreur lors de la création de l'objectif: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+    };
+  }
+}
+
+// Créer un événement via l'API locale
+export async function createEvent(eventData: {
+  title: string;
+  description?: string;
+  startAt: string;
+  endAt?: string;
+  location?: string;
+  isAllDay?: boolean;
+  color?: string;
+  category?: string;
+  userId?: string;
+}): Promise<ActionResult> {
+  try {
+    const userId = eventData.userId || 'mindlife-user';
+    
+    const response = await fetch('http://localhost:3090/api/events', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title: eventData.title,
+        description: eventData.description || '',
+        startAt: eventData.startAt,
+        endAt: eventData.endAt,
+        location: eventData.location,
+        isAllDay: eventData.isAllDay || false,
+        color: eventData.color || 'emerald',
+        categoryId: eventData.category,
+        userId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    const event = await response.json();
+    
+    return {
+      success: true,
+      message: `✅ Événement créé : "${eventData.title}"`,
+      data: event,
+    };
+  } catch (error) {
+    console.error('Error creating event:', error);
+    return {
+      success: false,
+      message: `Erreur lors de la création de l'événement: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
+    };
+  }
+}
+
+// Générer un repas via l'API locale
+export async function generateMeal(mealData: {
+  query?: string;
+  mealType?: string;
+  days?: number;
+  userId?: string;
+  save?: boolean;
+}): Promise<ActionResult> {
+  try {
+    const userId = mealData.userId || 'mindlife-user';
+    const mealType = mealData.mealType || 'dinner';
+    const days = mealData.days || 1;
+    const save = mealData.save || true;
+    
+    const response = await fetch('http://localhost:3090/api/meals/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        mealType,
+        userId,
+        days,
+        save,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    
+    // Extraire le premier repas généré pour le message
+    const meal = result.meals?.[0] || result;
+    
+    return {
+      success: true,
+      message: `✅ Repas généré : "${meal.name}" pour ${mealType === 'lunch' ? 'déjeuner' : 'dîner'}`,
+      data: result,
+    };
+  } catch (error) {
+    console.error('Error generating meal:', error);
+    return {
+      success: false,
+      message: `Erreur lors de la génération du repas: ${error instanceof Error ? error.message : 'Erreur inconnue'}`,
     };
   }
 }

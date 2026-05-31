@@ -23,11 +23,19 @@ type ToolIntent = 'web_search' | 'scrape_recipe' | 'scrape_content' | 'create_ev
   | 'data_query'
   | 'save_meal' | 'log_weight' | 'log_sleep' | 'log_sport'
   | 'create_meal_plan' | 'create_shopping_list'
-  | 'get_events' | 'get_tasks' | 'get_meals' | 'get_meal_plan' | 'get_shopping_lists' | 'get_notes';
+  | 'get_events' | 'get_tasks' | 'get_meals' | 'get_meal_plan' | 'get_shopping_lists' | 'get_notes'
+  // Mega-Tools intents
+  | 'meal_plan_complex_request' | 'shopping_assistant_request' | 'workout_generator_request';
 
 function detectToolIntent(message: string): ToolIntent | null {
   const lower = message.toLowerCase().trim();
 
+  // INTENTS MEGA-TOOLS (prioritaires)
+  if (/recette.*programmer|programmer.*recette|programmer.*demain|programmer.*soir|planifier.*repas|cherche.*recette.*programmer|cherche.*et.*programmer/i.test(lower)) return 'meal_plan_complex_request';
+  if (/liste.*course.*intelligente|courses.*optimisées|shopping.*assistant|liste.*courses.*ia/i.test(lower)) return 'shopping_assistant_request';
+  if (/programme.*entraînement|générer.*workout|plan.*sport|créer.*séance|programme.*fitness|plan.*musculation/i.test(lower)) return 'workout_generator_request';
+
+  // INTENTS ORIGINAUX
   if (/recette|cuisiner|marmiton|750g|préparer.*plat|ingrédients? pour/i.test(lower)) return 'scrape_recipe';
   if (/rendez-vous|rdv|réunion|meeting|planifier|réserver|calendrier|créer.*événement/i.test(lower)) return 'create_event';
   if (/tâche|tache|todo|à faire|a faire|ajouter.*tâche|task|créer.*tâche/i.test(lower)) return 'create_task';
@@ -81,6 +89,10 @@ export async function executeTool(tool: ToolIntent, params: any, userId = DEFAUL
     case 'get_meal_plan': return wrapAiTool(executeAiTool('get_meal_plan', params, userId));
     case 'get_shopping_lists': return wrapAiTool(executeAiTool('get_shopping_lists', params, userId));
     case 'get_notes': return wrapAiTool(executeAiTool('get_notes', params, userId));
+    // Mega-Tools execution
+    case 'meal_plan_complex_request': return wrapAiTool(executeAiTool('meal_plan_complex', params, userId));
+    case 'shopping_assistant_request': return wrapAiTool(executeAiTool('ai_shopping_assistant', params, userId));
+    case 'workout_generator_request': return wrapAiTool(executeAiTool('workout_generator', params, userId));
     default: return { success: false, output: 'Tool not found' };
   }
 }
@@ -131,6 +143,24 @@ function extractParams(intent: ToolIntent, message: string): any {
     case 'get_meal_plan': return {};
     case 'get_shopping_lists': return {};
     case 'get_notes': return {};
+    // Mega-Tools params extraction
+    case 'meal_plan_complex_request': {
+      const recipeMatch = message.match(/recette\s+(?:d|de|d'une|d'un)?\s*([^,.]+?)(?:\s+et|,|\s+pour|$)/i);
+      const query = recipeMatch ? recipeMatch[1] : message.replace(/recette.*?(?:d|de|d'une|d'un)?/i, '').trim();
+      const dateMatch = message.match(/(?:pour|programmer?|prévoir)\s+(?:demain|ce soir|demain soir|lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)/i);
+      return { query: query || message, date: null, mealType: 'dinner', servings: 4 };
+    }
+    case 'shopping_assistant_request': {
+      const budgetMatch = message.match(/(\d+)\s*€/i);
+      return { query: message, budget: budgetMatch ? parseInt(budgetMatch[1]) : null };
+    }
+    case 'workout_generator_request': {
+      const goalMatch = message.match(/(?:pour|objectif|but)\s+(?:[^,\.]+)/i);
+      const goal = goalMatch ? goalMatch[1] : 'santé';
+      const durationMatch = message.match(/(\d+)\s*min/i);
+      const duration = durationMatch ? parseInt(durationMatch[1]) : 45;
+      return { goal, duration, level: 'intermédiaire', equipment: 'minimal' };
+    }
     default: return {};
   }
 }
