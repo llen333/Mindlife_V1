@@ -18,6 +18,7 @@ import { NewUserModal } from './modals';
 import DashboardPanel from './panels/DashboardPanel';
 import IntegrationsPanel from './panels/IntegrationsPanel';
 import LogsPanel from './panels/LogsPanel';
+import ProvidersPanel from './panels/ProvidersPanel';
 
 const BLUE = '#3b82f6';
 const CYAN = '#06b6d4';
@@ -79,7 +80,7 @@ export default function SettingsPage() {
       case 'providers':
         return (
           <GlassSection accent="#8b5cf6">
-            <AIConfigPanel expanded={true} onToggle={() => {}} />
+            <ProvidersPanel />
           </GlassSection>
         );
       case 'integrations': return <IntegrationsPanel />;

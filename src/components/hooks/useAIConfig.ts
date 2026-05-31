@@ -13,7 +13,6 @@ import {
   hasValidApiKey,
   PROVIDERS
 } from '@/lib/ai-config';
-import getProviderColor from '@/components/AIConfigPanel';
 import { testProviderConnection } from '@/lib/ai-provider';
 
 export interface CustomProviderConfig {

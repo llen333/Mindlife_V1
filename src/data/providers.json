@@ -1,0 +1,13 @@
+{
+  "builtin": [
+    { "id": "local", "name": "Local (Fallback)", "baseUrl": "", "defaultModel": "" },
+    { "id": "zai", "name": "Z.ai", "baseUrl": "https://api.z.ai/api/coding/paas/v4", "defaultModel": "glm-4.5-air" },
+    { "id": "groq", "name": "Groq", "baseUrl": "https://api.groq.com/openai/v1", "defaultModel": "llama-3.1-70b-versatile" },
+    { "id": "openrouter", "name": "OpenRouter", "baseUrl": "https://openrouter.ai/api/v1", "defaultModel": "meta-llama/llama-3.1-70b-instruct" },
+    { "id": "openai", "name": "OpenAI", "baseUrl": "https://api.openai.com/v1", "defaultModel": "gpt-4o-mini" },
+    { "id": "huggingface", "name": "Hugging Face", "baseUrl": "https://api-inference.huggingface.co/models", "defaultModel": "meta-llama/Llama-3.1-70B-Instruct" },
+    { "id": "gemini", "name": "Google Gemini", "baseUrl": "https://generativelanguage.googleapis.com/v1beta", "defaultModel": "gemini-1.5-flash" }
+  ],
+  "custom": [],
+  "updatedAt": "2026-05-31T02:00:00.000Z"
+}

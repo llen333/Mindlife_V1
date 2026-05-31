@@ -101,7 +101,7 @@ export const PROVIDERS: Record<AIProvider, ProviderConfig> = {
   },
   zai: {
     name: 'Z.ai',
-    apiKey: '9fd42f5cf2df48f4955f77a48519150a.Hd427mUP8G9YWYMe',
+    apiKey: '',
     baseUrl: 'https://api.z.ai/api/coding/paas/v4',
     models: {
       default: 'glm-4.5-air',
@@ -124,7 +124,7 @@ const DEFAULT_CONFIG: AIConfig = {
     huggingface: '',
     gemini: '',
     openai: '',
-    zai: '9fd42f5cf2df48f4955f77a48519150a.Hd427mUP8G9YWYMe',
+    zai: '',
   },
   functionProviders: {
     spirit: 'zai',
@@ -221,7 +221,14 @@ export function setApiKey(provider: AIProvider, key: string): void {
 
 export function getApiKey(provider: AIProvider): string {
   const config = getAIConfig();
-  return config.apiKeys[provider] || '';
+  const stored = config.apiKeys[provider] || '';
+
+  // Server-side: check env vars first
+  if (typeof window === 'undefined') {
+    const envName = `PROVIDER_${provider.toUpperCase().replace(/-/g, '_')}_KEY`;
+    return process.env[envName] || stored;
+  }
+  return stored;
 }
 
 export function setFunctionProvider(func: AIFunction, provider: AIProvider): void {
