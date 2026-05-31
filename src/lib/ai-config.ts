@@ -240,18 +240,26 @@ export function setFunctionProvider(func: AIFunction, provider: AIProvider): voi
 export function getFunctionProvider(func: AIFunction): AIProvider {
   const config = getAIConfig();
   const provider = config.functionProviders[func];
-  
-  // Vérifier si le provider a une clé API (sauf local)
-  if (provider !== 'local' && !config.apiKeys[provider]) {
-    return 'local';
+
+  if (provider !== 'local') {
+    const configKey = config.apiKeys[provider];
+    const envName = `PROVIDER_${provider.toUpperCase().replace(/-/g, '_')}_KEY`;
+    const envKey = typeof window === 'undefined' ? process.env[envName] : undefined;
+    if (!configKey && !envKey) {
+      return 'local';
+    }
   }
-  
+
   return provider;
 }
 
 export function hasValidApiKey(provider: AIProvider): boolean {
+  if (provider === 'local') return true;
   const config = getAIConfig();
-  return provider === 'local' || !!config.apiKeys[provider];
+  if (config.apiKeys[provider]) return true;
+  const envName = `PROVIDER_${provider.toUpperCase().replace(/-/g, '_')}_KEY`;
+  const envKey = typeof window === 'undefined' ? process.env[envName] : undefined;
+  return !!envKey;
 }
 
 // ============================================
