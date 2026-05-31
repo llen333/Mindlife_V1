@@ -73,19 +73,27 @@ export default function ProvidersPanel() {
 
   useEffect(() => { loadProviders(); loadLocalKeys(); }, []);
 
-  const getEffectiveKey = (p: ProviderDef): string => {
-    return apiKeys[p.id] || '';
+  const canTest = (p: ProviderDef): boolean => {
+    return p.isBuiltin ? p.hasKey : !!apiKeys[p.id];
   };
 
   const handleTest = async (p: ProviderDef) => {
-    const key = getEffectiveKey(p);
-    if (!key) return;
+    if (!canTest(p)) return;
     setTestingId(p.id);
     setTestResults(prev => ({ ...prev, [p.id]: { success: false, message: 'Test en cours...' } }));
+    const body: any = { action: 'test' };
+    if (p.isBuiltin) {
+      body.providerId = p.id;
+      body.model = p.defaultModel;
+    } else {
+      body.baseUrl = p.baseUrl;
+      body.apiKey = apiKeys[p.id];
+      body.model = p.defaultModel;
+    }
     const res = await fetch('/api/providers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'test', baseUrl: p.baseUrl, apiKey: key, model: p.defaultModel }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     setTestResults(prev => ({ ...prev, [p.id]: data }));
@@ -93,13 +101,19 @@ export default function ProvidersPanel() {
   };
 
   const handleFetchModels = async (p: ProviderDef) => {
-    const key = getEffectiveKey(p);
-    if (!key) return;
+    if (!canTest(p)) return;
     setLoadingModelsId(p.id);
+    const body: any = { action: 'models' };
+    if (p.isBuiltin) {
+      body.providerId = p.id;
+    } else {
+      body.baseUrl = p.baseUrl;
+      body.apiKey = apiKeys[p.id];
+    }
     const res = await fetch('/api/providers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'models', baseUrl: p.baseUrl, apiKey: key }),
+      body: JSON.stringify(body),
     });
     const data = await res.json();
     if (data.success && data.models) setFetchedModels(prev => ({ ...prev, [p.id]: data.models }));
@@ -284,12 +298,12 @@ export default function ProvidersPanel() {
                   )}
 
                   <div className="flex gap-2">
-                    <button onClick={() => handleTest(p)} disabled={!effectiveKey || testingId === p.id}
+                    <button onClick={() => handleTest(p)} disabled={!canTest(p) || testingId === p.id}
                       className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/60 text-xs hover:bg-white/10 hover:text-white transition-all disabled:opacity-30">
                       {testingId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <TestTube className="w-3 h-3" />}
                       Tester
                     </button>
-                    <button onClick={() => handleFetchModels(p)} disabled={!effectiveKey || loadingModelsId === p.id}
+                    <button onClick={() => handleFetchModels(p)} disabled={!canTest(p) || loadingModelsId === p.id}
                       className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white/60 text-xs hover:bg-white/10 hover:text-white transition-all disabled:opacity-30">
                       {loadingModelsId === p.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                       Modèles

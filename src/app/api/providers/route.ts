@@ -37,7 +37,21 @@ export async function POST(request: NextRequest) {
       }
 
       case 'test': {
-        const { baseUrl, apiKey, model } = body;
+        const { providerId, baseUrl, apiKey, model } = body;
+        // Built-in provider: look up env key server-side
+        if (providerId && !apiKey) {
+          const envName = `PROVIDER_${providerId.toUpperCase().replace(/-/g, '_')}_KEY`;
+          const envKey = process.env[envName];
+          if (!envKey) {
+            return NextResponse.json({ success: false, message: 'Aucune clé configurée dans .env.local' }, { status: 400 });
+          }
+          const provider = (await getAllProviders()).find(p => p.id === providerId);
+          if (!provider) {
+            return NextResponse.json({ success: false, message: 'Provider inconnu' }, { status: 400 });
+          }
+          const result = await testProviderConnection(provider.baseUrl, envKey, model || provider.defaultModel);
+          return NextResponse.json({ success: true, ...result });
+        }
         if (!baseUrl || !apiKey) {
           return NextResponse.json({ success: false, error: 'baseUrl et apiKey requis' }, { status: 400 });
         }
@@ -46,7 +60,21 @@ export async function POST(request: NextRequest) {
       }
 
       case 'models': {
-        const { baseUrl, apiKey } = body;
+        const { providerId, baseUrl, apiKey } = body;
+        // Built-in provider: look up env key server-side
+        if (providerId && !apiKey) {
+          const envName = `PROVIDER_${providerId.toUpperCase().replace(/-/g, '_')}_KEY`;
+          const envKey = process.env[envName];
+          if (!envKey) {
+            return NextResponse.json({ success: false, models: [], message: 'Aucune clé configurée' });
+          }
+          const provider = (await getAllProviders()).find(p => p.id === providerId);
+          if (!provider) {
+            return NextResponse.json({ success: false, models: [], message: 'Provider inconnu' });
+          }
+          const result = await fetchProviderModels(provider.baseUrl, envKey);
+          return NextResponse.json({ success: true, ...result });
+        }
         if (!baseUrl || !apiKey) {
           return NextResponse.json({ success: false, error: 'baseUrl et apiKey requis' }, { status: 400 });
         }
