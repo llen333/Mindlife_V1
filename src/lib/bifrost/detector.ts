@@ -57,6 +57,26 @@ const INTENT_PATTERNS: IntentPattern[] = [
     intent: 'sport_advice',
     patterns: [/conseil.*sport|astuce.*entraînement|motivation.*sport|récupération.*sport|progression.*sport/i],
   },
+  {
+    moduleId: 'organisation',
+    intent: 'task_create',
+    patterns: [/je dois|je vais.*(faire|aller|prendre)|il faut que|ajoute.*tâche|ajoute.*tache|crée.*tâche|cree.*tache|nouvelle.*tâche|nouvelle.*tache|todo|à faire|a faire/i],
+  },
+  {
+    moduleId: 'organisation',
+    intent: 'event_create',
+    patterns: [/rendez-vous|rdv|réunion|reunion|meeting|crée.*événement|cree.*evenement|planifier.*rdv|calendrier|agenda|programme.*journée|programme.*journee/i],
+  },
+  {
+    moduleId: 'organisation',
+    intent: 'goal_create',
+    patterns: [/nouvel objectif|nouveau but|je veux.*(atteindre|devenir|accomplir)|créer.*objectif|cree.*objectif/i],
+  },
+  {
+    moduleId: 'organisation',
+    intent: 'org_advice',
+    patterns: [/conseil.*organisat|astuce.*productiv|prioris|méthode.*travail|methode.*travail|gestion.*temps|organisation/i],
+  },
 ];
 
 function lightningDetect(message: string): BifrostDecision | null {
@@ -97,10 +117,11 @@ Message: "${message}"${agentContext}
 Modules disponibles:
 - nutrition: repas, recettes, plan alimentaire, courses
 - sport: entraînement, exercices, programmes sportifs, séances
-- (aucun): conversation générale, questions, tâches, événements, recherche web
+- organisation: tâches, rendez-vous, événements, objectifs, productivité
+- (aucun): conversation générale, questions, recherche web
 
 Retourne UNIQUEMENT un objet JSON:
-{ "moduleId": "nutrition"|"sport"|null, "intent": "description_courte", "confidence": "high"|"medium"|"low", "reasoning": "10 mots max" }`;
+{ "moduleId": "nutrition"|"sport"|"organisation"|null, "intent": "description_courte", "confidence": "high"|"medium"|"low", "reasoning": "10 mots max" }`;
 
     const result = await aiChat(prompt, {
       func: 'chat',
@@ -115,7 +136,7 @@ Retourne UNIQUEMENT un objet JSON:
       .trim();
 
     const parsed = JSON.parse(cleaned);
-    if (!parsed.moduleId || !['nutrition', 'sport'].includes(parsed.moduleId)) return null;
+    if (!parsed.moduleId || !['nutrition', 'sport', 'organisation'].includes(parsed.moduleId)) return null;
 
     return {
       intent: parsed.intent || 'unknown',
