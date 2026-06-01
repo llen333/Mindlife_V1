@@ -403,6 +403,9 @@ const TasksPanel = memo(function TasksPanel() {
     ? Math.round((stats.completed / stats.total) * 100) 
     : 0
 
+  // Rafraîchir les tâches au montage (agent-service crée des tâches en side)
+  useEffect(() => { loadTasks() }, [loadTasks])
+
   // Animations GSAP au montage
   useEffect(() => {
     const ctx = gsap.context(() => {

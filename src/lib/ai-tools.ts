@@ -107,7 +107,14 @@ export const TOOLS: Record<ToolName, ToolDef> = {
       required: ['title', 'startDate'],
     },
     execute: async (args, { userId }) => {
-      const { title, startDate, endDate, description, location, color } = args;
+      const { startDate, endDate, description, location, color } = args;
+      let rawTitle = args.title || 'Événement';
+      rawTitle = rawTitle
+        .replace(/^(prendre un |ajouter |créer |cree |planifier |programmer |noter )/i, '')
+        .replace(/\b(un |une |des |du |de la |pour |chez |au |aux |le |la |les |mon |mes |ton |ta |sa |notre |votre )/gi, ' ')
+        .replace(/\s+(demain|aujourd'hui|ce (soir|matin|midi|après.midi)|à \d+h\d*|à \d+ heures?)/gi, '')
+        .replace(/\s+/g, ' ').trim();
+      const title = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
       let start = parseRelativeDate(startDate);
       if (!start) start = new Date(startDate);
       if (isNaN(start.getTime())) start = new Date(Date.now() + 3600000);
@@ -117,7 +124,7 @@ export const TOOLS: Record<ToolName, ToolDef> = {
         data: {
           id: `event-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           userId,
-          title: title || 'Événement',
+          title,
           description: description || null,
           location: location || null,
           startAt: start,
@@ -500,7 +507,14 @@ ${location ? `📍 ${location}` : ''}`;
       required: ['title'],
     },
     execute: async (args, { userId }) => {
-      const { title, description, priority, dueDate } = args;
+      const { description, priority, dueDate } = args;
+      let rawTitle = args.title || '';
+      rawTitle = rawTitle
+        .replace(/^(prendre un |ajouter |créer |cree |planifier |programmer |rajouter |noter |faire |aller |voir )/i, '')
+        .replace(/\b(un |une |des |du |de la |pour |chez |au |aux |le |la |les |mon |mes |ma |ton |ta |tes |sa |ses |notre |vos |leurs )/gi, ' ')
+        .replace(/\s+(demain|aujourd'hui|ce (soir|matin|midi|après.midi)|à \d+h\d*|à \d+ heures?)/gi, '')
+        .replace(/\s+/g, ' ').trim();
+      const title = rawTitle.charAt(0).toUpperCase() + rawTitle.slice(1);
       const task = await db.task.create({
         data: {
           id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,

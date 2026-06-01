@@ -132,7 +132,9 @@ function parseTaskMessage(msg: string): { title: string; dueDate?: string; prior
   }
 
   title = title.replace(/\s+/g, ' ').trim();
-  title = title.replace(/^(ajoute|cr[ée]e|planifie|programme|rajoute|note)\s+/i, '').trim();
+  title = title.replace(/^(prendre un |ajoute |cr[ée]e |planifie |programme |rajoute |note |rappelle.moi |faire |aller |voir )/i, '').trim();
+  title = title.replace(/\b(un |une |des |du |de la |pour |chez |au |aux |le |la |les )/gi, ' ').trim();
+  title = title.charAt(0).toUpperCase() + title.slice(1);
   return { title: title || msg, dueDate, priority };
 }
 
@@ -150,7 +152,7 @@ export async function POST(request: NextRequest) {
     // DÉTECTION RAPIDE D'INTENTION (avant Plan & Execute)
     // ============================================
     const lower = message.toLowerCase();
-    const taskKeywords = ['ajoute', 'crée', 'planifie',
+    const taskKeywords = ['ajoute', 'crée', 'planifie', 'prendre',
                           'rappelle-moi', 'rajoute', 'note', 'à faire', 'todo'];
     const isSportContext = /programme.*(sport|entraînement|entrainement|fitness|musculation)|entraînement|entrainement|sportif|workout|fitness|musculation|séance|exercice/i.test(lower);
     if ((taskKeywords.some(kw => lower.includes(kw)) || lower.includes('aller faire les courses')) && !isSportContext) {
