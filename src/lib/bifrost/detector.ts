@@ -58,6 +58,31 @@ const INTENT_PATTERNS: IntentPattern[] = [
     patterns: [/conseil.*sport|astuce.*entraînement|motivation.*sport|récupération.*sport|progression.*sport/i],
   },
   {
+    moduleId: 'donnees',
+    intent: 'save_note',
+    patterns: [/note.*sauvegarde|sauvegarde.*note|écris.*note|mémorise|souviens.*toi|je note.*que/i],
+  },
+  {
+    moduleId: 'donnees',
+    intent: 'get_notes',
+    patterns: [/mes notes|affiche.*note|liste.*note|rappelle.*note/i],
+  },
+  {
+    moduleId: 'donnees',
+    intent: 'log_weight',
+    patterns: [/poids|pesée|peser|(log|enregistre).*poids/i],
+  },
+  {
+    moduleId: 'donnees',
+    intent: 'log_sleep',
+    patterns: [/dormi|sommeil|(log|enregistre).*sommeil|coucher.*réveil|qualité.*sommeil/i],
+  },
+  {
+    moduleId: 'donnees',
+    intent: 'create_shopping_list',
+    patterns: [/liste.*course|liste.*achat|liste.*course|crée.*liste.*course/i],
+  },
+  {
     moduleId: 'organisation',
     intent: 'task_create',
     patterns: [/je dois|je vais.*(faire|aller|prendre)|il faut que|ajoute.*tâche|ajoute.*tache|crée.*tâche|cree.*tache|nouvelle.*tâche|nouvelle.*tache|todo|à faire|a faire/i],
@@ -65,7 +90,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
   {
     moduleId: 'organisation',
     intent: 'event_create',
-    patterns: [/rendez-vous|rdv|réunion|reunion|meeting|crée.*événement|cree.*evenement|planifier.*rdv|calendrier|agenda|programme.*journée|programme.*journee/i],
+    patterns: [/rendez-vous|rdv|réunion|reunion|meeting|note.*rendez-vous|crée.*événement|cree.*evenement|planifier.*rdv|calendrier|agenda|programme.*journée|programme.*journee/i],
   },
   {
     moduleId: 'organisation',
@@ -129,6 +154,7 @@ Modules disponibles:
 - sport: entraînement, exercices, programmes sportifs, séances
 - organisation: tâches, rendez-vous, événements, objectifs, productivité
 - recherche: recherche web, extraction de contenu de page, actualités
+- donnees: notes, poids, sommeil, listes de courses
 - (aucun): conversation générale, questions simples
 
 Retourne UNIQUEMENT un objet JSON:
@@ -147,7 +173,7 @@ Retourne UNIQUEMENT un objet JSON:
       .trim();
 
     const parsed = JSON.parse(cleaned);
-    if (!parsed.moduleId || !['nutrition', 'sport', 'organisation', 'recherche'].includes(parsed.moduleId)) return null;
+    if (!parsed.moduleId || !['nutrition', 'sport', 'organisation', 'recherche', 'donnees'].includes(parsed.moduleId)) return null;
 
     return {
       intent: parsed.intent || 'unknown',

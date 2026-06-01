@@ -22,21 +22,12 @@ export class OrganisationModule implements Module {
   }
 
   async execute(context: MessageContext): Promise<ModuleResponse> {
-    const { message } = context;
+    const { message, intent } = context;
     try {
       const lower = message.toLowerCase();
 
-      if (/urgent/i.test(lower) && !/programme.*(sport|entraînement)/i.test(lower)) {
-        const title = ORGANISATION_TOOLS.create_task.execute({
-          title: message,
-          priority: 5,
-          dueDate: new Date(Date.now() + 3600000).toISOString(),
-        }, { userId: context.userId || '' });
-        const t = await title;
-        return { success: true, content: t, moduleId: this.id };
-      }
-
-      if (/rendez-vous|rdv|réunion|reunion|meeting|calendrier|agenda/i.test(lower)) {
+      // Priorité à l'intention fournie par Bifrost
+      if (intent === 'event_create' || (!intent && (/rendez-vous|rdv|réunion|reunion|meeting|calendrier|agenda/i.test(lower)))) {
         const startDate = parseRelativeDate(lower) || new Date(Date.now() + 3600000).toISOString();
         const result = await ORGANISATION_TOOLS.create_event.execute({
           title: message, startDate,
@@ -44,23 +35,25 @@ export class OrganisationModule implements Module {
         return { success: true, content: result, moduleId: this.id };
       }
 
-      if (/je dois|je vais.*(faire|aller|prendre)|il faut|doit.*(faire|aller|prendre)|tâche|tache|todo|à faire|a faire|ajoute.*note|note.*pour/i.test(lower)) {
+      if (intent === 'task_create' || (!intent && (/je dois|je vais.*(faire|aller|prendre)|il faut|doit.*(faire|aller|prendre)|urgent|tâche|tache|todo|à faire|a faire|ajoute.*note/i.test(lower)))) {
+        const isUrgent = /urgent/i.test(lower) && !/programme.*(sport|entraînement)/i.test(lower);
         const dueDate = parseRelativeDate(lower);
         const result = await ORGANISATION_TOOLS.create_task.execute({
           title: message,
+          priority: isUrgent ? 5 : 3,
           dueDate: dueDate || undefined,
         }, { userId: context.userId || '' });
         return { success: true, content: result, moduleId: this.id };
       }
 
-      if (/objectif|but|goal|projet|veux.*(atteindre|accomplir|devenir)/i.test(lower)) {
+      if (intent === 'goal_create' || (!intent && (/objectif|but|goal|projet|veux.*(atteindre|accomplir|devenir)/i.test(lower)))) {
         const result = await ORGANISATION_TOOLS.create_goal.execute({
           title: message,
         }, { userId: context.userId || '' });
         return { success: true, content: result, moduleId: this.id };
       }
 
-      if (/conseil.*organis|astuce.*productiv|priorit|méthode|methode/i.test(lower)) {
+      if (intent === 'org_advice' || (!intent && (/conseil.*organis|astuce.*productiv|priorit|méthode|methode/i.test(lower)))) {
         const topic = lower.match(/organis|productiv|priorit/)?.[0] || 'organisation';
         const map: Record<string, string> = { organis: 'organisation', productiv: 'productivite', priorit: 'priorites' };
         return { success: true, content: `📋 **Conseil organisation**\n\n${FALLBACK.getAdvice(map[topic] || 'organisation')}`, moduleId: this.id };
