@@ -10,7 +10,7 @@ const INTENT_PATTERNS: IntentPattern[] = [
   {
     moduleId: 'nutrition',
     intent: 'recipe_search',
-    patterns: [/recette|cuisiner|marmiton|750g|préparer.*plat|ingrédients? pour/i],
+    patterns: [/recette|cuisiner|marmiton|750g|préparer.*plat|ingrédients? pour|faire (un|une|du|de la|des) .*gâteau|faire (un|une|du|de la|des) .*plat|faire (un|une|du|de la|des) .*recette/i],
   },
   {
     moduleId: 'nutrition',
@@ -77,6 +77,16 @@ const INTENT_PATTERNS: IntentPattern[] = [
     intent: 'org_advice',
     patterns: [/conseil.*organisat|astuce.*productiv|prioris|méthode.*travail|methode.*travail|gestion.*temps|organisation/i],
   },
+  {
+    moduleId: 'recherche',
+    intent: 'web_search',
+    patterns: [/cherche.*info|recherche.*web|trouve.*info|quel est|qu'est-ce que|c'est quoi|comment fonctionne|actualité.*(tech|sport|politique|monde|fr|usa)|info sur|va chercher.*info|va voir.*site/i],
+  },
+  {
+    moduleId: 'recherche',
+    intent: 'scrape_url',
+    patterns: [/extrais.*contenu|scrape.*page|contenu de l[ea] page|extrais.*site|résumé.*article/i],
+  },
 ];
 
 function lightningDetect(message: string): BifrostDecision | null {
@@ -118,7 +128,8 @@ Modules disponibles:
 - nutrition: repas, recettes, plan alimentaire, courses
 - sport: entraînement, exercices, programmes sportifs, séances
 - organisation: tâches, rendez-vous, événements, objectifs, productivité
-- (aucun): conversation générale, questions, recherche web
+- recherche: recherche web, extraction de contenu de page, actualités
+- (aucun): conversation générale, questions simples
 
 Retourne UNIQUEMENT un objet JSON:
 { "moduleId": "nutrition"|"sport"|"organisation"|null, "intent": "description_courte", "confidence": "high"|"medium"|"low", "reasoning": "10 mots max" }`;
@@ -136,7 +147,7 @@ Retourne UNIQUEMENT un objet JSON:
       .trim();
 
     const parsed = JSON.parse(cleaned);
-    if (!parsed.moduleId || !['nutrition', 'sport', 'organisation'].includes(parsed.moduleId)) return null;
+    if (!parsed.moduleId || !['nutrition', 'sport', 'organisation', 'recherche'].includes(parsed.moduleId)) return null;
 
     return {
       intent: parsed.intent || 'unknown',
