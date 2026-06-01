@@ -11,14 +11,14 @@ const BLUE = '#3b82f6';
 const CYAN = '#06b6d4';
 
 const AGENT_IMAGES: Record<string, string> = {
-  Atlas: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDx84oLAYHYFLFWWyJ7RG88kfnOsL-HVOnI0KoJJ9DZtF-3wFgRRZ8YAmtjm2rRekGiOJ2IZdwxQpxRgXTY1iDMXWEP5Ngm_iil4caXU9YELSwfjgF6DjBYscXRyHfLVfpX-mw8lJ6Yjr33OVzCwV1pijnTn6ZcnXX4_30wlCpD9-PTnTkgsnt-1ZvdzBxSFQQDtnMs3I1sqrfmkVk5n0_hSqqQFtbrbvmGVVEBnjxFDDSegqX1l-OhPqSDXVPCFTaLnDlWmlTPjZI',
-  Miam: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD916veW3qsBV9yoMX1rdMrZ53pgHt3_itq-MS_WVACs4rsXP9QkC0tQbfsdJWAImP5bv68sGZ8VBli-X2gTENKlhWlv0RcRY9ma0RdExzKtV2qX42P2pb6gP6XTyVsbarchNTr7qS9vkXOWhkUrERFGfO78EehcmTlB8H_fh_a0W0zIq7TxY1tnxiQiha-uU_UiE9aOks-kqxoNiG-5r3ZGkDB_DidHrXFlRu6x4Edskn1CNsENyX3ue2095zncCEeRDJn0GKyZcU',
-  Psyché: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAkAOiwwWwsRx_hPjxrUFDR7inmaKt9Q6CmkeJstxGjACK_BKixMW_ryZbzjPhlVl7SJ_tHsSV0mzWVfOE_GFh5gy_s_WfPuVLZuXjDc9ylC-JWQ-IsyUdOhmxm5-i_WarDhSv3K30QY07BIBTtiNOQSNI7dDmiNEx67U8oPAlsgVaP8OJrF0f6P8Yqad-CjwLXWpeV5TGEShz5L7FPeOCtjTs6ApxoDXljj0Vo3_OyjNGjIvF2Iw6PwvtTGhzEQLMv5uOECDtHVLM',
-  Pyxos: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAhbu1bxjNNw6Z5E4DPrKWoJMemfMhE5pPakRnfKMEA2uKE3wVntx90LfEvVXsbJJA8hmt6y8wugPmvslGdPR8uQWhUpH69MpX1CW8_4zbVfWIWkzEsvglHAEepfoOkgxJ0u68Vh76cLreyr1XcP1O9j-EV8s1RwyZ6A-ONZZ5-S5jWrxK_2FmKh2dcdQ8FIpxdJxckx-0BDI3wXOIx4XePrzlkshsmGfe97_2DRCmpHqMlPzehPRJMaufm8cN8HEBFGTOxj-M6fq4',
-  Somnia: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCEIX6D-zT7uE6xZnT8xn8eyoJ5dcl5GMdnf010PHlKDnmxs8CNnLU9CQybuydULaD_Hw4k32VxC79sTnvCCRTykbn3jCgyNVf4Xu055rLrcNjUxLcPXQG5IXTi1n1lNEDDnrmCM8tOjrRrGcLEp2DRGnLcgSYe8_-hNW_VH2_VOALRXKQ4wWcAuRSYA6UDP-kbr1RC-iPfmAdNWYTEEiQLHMqu7eHf5H0k27GrTbjVytB-RKr5vgYZegRkU_JxPhIO_3JeLSwivc4',
-  Zéphyr: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAzr8YTxoLmx-FDAUs0kpiWmZn479GkINFOs2cGSZnAirda_Fvvn6aCRx8-p0r3Ew8l3W-S9spjZLbREFadhIthPjEQ5a-VKZmIz8JiIcR3Usr1NtcDfSpicUt_Tu1AOynKhmsiJhnnQeIsxf5qJ8L_dTasZ3bWJVZzRnMsFVDh-m5N_wu6BOPrggMEFpWWHwWVjijemsNxl5MwLOY7jyOh97yaLBUuZCakWsUayxeztySjqXupSGC3z2s7NuicfKdNkWp4Celj_XU',
-  Ami: 'https://images.unsplash.com/photo-1758600432914-2b5f4483c7b8?auto=format&fit=crop&w=600&h=800&q=80',
-  Stoïcien: 'https://images.unsplash.com/photo-1758691032219-4e071fe08ac9?auto=format&fit=crop&w=600&h=800&q=80',
+  Atlas: '/images/agents/atlas.jpg',
+  Miam: '/images/agents/miam.jpg',
+  Psyché: '/images/agents/psyche.jpg',
+  Pyxos: '/images/agents/pyxos.jpg',
+  Somnia: '/images/agents/somnia.jpg',
+  Zéphyr: '/images/agents/zephyr.jpg',
+  Ami: '/images/agents/ami.jpg',
+  Stoïcien: '/images/agents/stoicien.jpg',
 };
 
 const AGENT_STYLE: Record<string, { color: string; overlay: string; neon: string; label: string }> = {
@@ -114,9 +114,7 @@ export default function DashboardPanel() {
             key={i}
             className="relative p-7 rounded-[24px] border border-white/[0.06] overflow-hidden group hover:border-blue-500/30 transition-all duration-500"
             style={{
-              background: 'rgba(18, 18, 23, 0.6)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              background: 'rgba(18, 18, 23, 0.85)',
               boxShadow: i === 0 ? `inset 0 1px 1px rgba(255,255,255,0.02), 0 0 30px ${BLUE}22` : 'inset 0 1px 1px rgba(255,255,255,0.02)',
             }}
           >
@@ -148,9 +146,7 @@ export default function DashboardPanel() {
           <div
             className="rounded-[24px] border border-white/[0.06] p-8 h-full transition-all duration-500 hover:border-blue-500/20"
             style={{
-              background: 'rgba(18, 18, 23, 0.6)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              background: 'rgba(18, 18, 23, 0.85)',
               boxShadow: `inset 0 1px 1px rgba(255,255,255,0.02), 0 0 40px ${BLUE}11`,
             }}
           >
@@ -217,9 +213,7 @@ export default function DashboardPanel() {
           <div
             className="rounded-[24px] border border-white/[0.06] p-8 flex-1 transition-all duration-500 hover:border-blue-500/20"
             style={{
-              background: 'rgba(18, 18, 23, 0.6)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
+              background: 'rgba(18, 18, 23, 0.85)',
               boxShadow: `inset 0 1px 1px rgba(255,255,255,0.02), 0 0 40px ${BLUE}11`,
             }}
           >

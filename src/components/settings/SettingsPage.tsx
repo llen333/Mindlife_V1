@@ -179,9 +179,7 @@ function GlassSection({ accent, children }: { accent: string; children: React.Re
     <div
       className="rounded-[24px] border border-white/[0.06] p-8 transition-all duration-500 hover:border-blue-500/20"
       style={{
-        background: 'rgba(18, 18, 23, 0.6)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: 'rgba(18, 18, 23, 0.85)',
         boxShadow: `inset 0 1px 1px rgba(255,255,255,0.02), 0 0 40px ${BLUE}11`,
       }}
     >
@@ -215,7 +213,7 @@ function ProfilePanel({ formData, setFormData, calculatedMetrics, toggleArrayIte
         ].map(m => (
           <div key={m.label}
             className="p-5 rounded-[20px] border border-white/[0.06]"
-            style={{ background: 'rgba(18, 18, 23, 0.4)', backdropFilter: 'blur(20px)' }}
+                    style={{ background: 'rgba(18, 18, 23, 0.7)' }}
           >
             <div className="text-[9px] text-slate-500 uppercase tracking-wider font-mono mb-1">{m.label}</div>
             <div className="text-xl font-mono text-white font-medium">{m.value}</div>

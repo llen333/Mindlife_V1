@@ -76,21 +76,20 @@ export default function ProvidersPanel() {
   useEffect(() => { loadProviders(); loadLocalKeys(); }, []);
 
   const canTest = (p: ProviderDef): boolean => {
-    return p.isBuiltin ? !!p.hasKey : !!apiKeys[p.id];
+    return p.isBuiltin ? !!(p.hasKey || apiKeys[p.id]) : !!apiKeys[p.id];
   };
 
   const handleTest = async (p: ProviderDef) => {
     if (!canTest(p)) return;
     setTestingId(p.id);
     setTestResults(prev => ({ ...prev, [p.id]: { success: false, message: 'Test en cours...' } }));
-    const body: any = { action: 'test' };
-    if (p.isBuiltin) {
+    const body: any = { action: 'test', model: p.defaultModel };
+    const localKey = apiKeys[p.id];
+    if (p.isBuiltin && !localKey) {
       body.providerId = p.id;
-      body.model = p.defaultModel;
     } else {
       body.baseUrl = p.baseUrl;
-      body.apiKey = apiKeys[p.id];
-      body.model = p.defaultModel;
+      body.apiKey = localKey || '';
     }
     const res = await fetch('/api/providers', {
       method: 'POST',
@@ -106,11 +105,12 @@ export default function ProvidersPanel() {
     if (!canTest(p)) return;
     setLoadingModelsId(p.id);
     const body: any = { action: 'models' };
-    if (p.isBuiltin) {
+    const localKey = apiKeys[p.id];
+    if (p.isBuiltin && !localKey) {
       body.providerId = p.id;
     } else {
       body.baseUrl = p.baseUrl;
-      body.apiKey = apiKeys[p.id];
+      body.apiKey = localKey || '';
     }
     const res = await fetch('/api/providers', {
       method: 'POST',
@@ -319,21 +319,19 @@ export default function ProvidersPanel() {
                 </div>
 
                 <div className="space-y-3">
-                  {!p.isBuiltin && (
-                    <div className="relative">
-                      <input
-                        type={showKeys[p.id] ? 'text' : 'password'}
-                        value={localKey}
-                        onChange={e => saveLocalKey(p.id, e.target.value)}
-                        placeholder="Clé API..."
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-violet-500/40"
-                      />
-                      <button onClick={() => setShowKeys(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
-                        {showKeys[p.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  )}
+                  <div className="relative">
+                    <input
+                      type={showKeys[p.id] ? 'text' : 'password'}
+                      value={localKey}
+                      onChange={e => saveLocalKey(p.id, e.target.value)}
+                      placeholder="Clé API..."
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-violet-500/40"
+                    />
+                    <button onClick={() => setShowKeys(prev => ({ ...prev, [p.id]: !prev[p.id] }))}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60">
+                      {showKeys[p.id] ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
 
                   <div className="flex gap-2">
                     <button onClick={() => handleTest(p)} disabled={!canTest(p) || testingId === p.id}

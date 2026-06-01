@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { agentService } from '@/lib/services/agent-service';
 import { db } from '@/lib/db';
+import '@/lib/modules';
 
 const DEFAULT_USER_ID = 'mindlife-user';
 
@@ -149,9 +150,10 @@ export async function POST(request: NextRequest) {
     // DÉTECTION RAPIDE D'INTENTION (avant Plan & Execute)
     // ============================================
     const lower = message.toLowerCase();
-    const taskKeywords = ['ajoute', 'crée', 'planifie', 'programme',
+    const taskKeywords = ['ajoute', 'crée', 'planifie',
                           'rappelle-moi', 'rajoute', 'note', 'à faire', 'todo'];
-    if (taskKeywords.some(kw => lower.includes(kw)) || lower.includes('aller faire les courses')) {
+    const isSportContext = /programme.*(sport|entraînement|entrainement|fitness|musculation)|entraînement|entrainement|sportif|workout|fitness|musculation|séance|exercice/i.test(lower);
+    if ((taskKeywords.some(kw => lower.includes(kw)) || lower.includes('aller faire les courses')) && !isSportContext) {
       const parsed = parseTaskMessage(message);
       try {
         const task = await db.task.create({

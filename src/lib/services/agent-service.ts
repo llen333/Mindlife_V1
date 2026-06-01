@@ -2,6 +2,9 @@ import { db } from '@/lib/db';
 import { aiChat } from '@/lib/ai-provider';
 import { AIFunction } from '@/lib/ai-config';
 import { getOpenAITools, executeToolByName } from '@/lib/ai-tools';
+import { bifrost } from '@/lib/bifrost';
+import { bus } from '@/lib/bus/orchestrator';
+import '@/lib/modules';
 
 export interface ProcessMessageParams {
   agentId: string;
@@ -216,13 +219,57 @@ Rappels importants :
       return text.trim();
     };
 
-    // --- PLAN & EXECUTE FLOW ---
+    // ============================================
+    // BIFROST: détection et routage rapide
+    // ============================================
+    const bifrostResult = await bifrost.detectAndRoute(params.message, {
+      userId: params.userId,
+      sessionId: session.id,
+      agentName: agent.name,
+      role: agent.role,
+      history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+    });
+
+    if (bifrostResult.handled) {
+      await db.agentChatMessage.create({
+        data: {
+          id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          sessionId: session.id,
+          role: 'user',
+          content: params.message,
+        },
+      });
+      await db.agentChatMessage.create({
+        data: {
+          id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          sessionId: session.id,
+          role: 'assistant',
+          content: bifrostResult.response!,
+        },
+      });
+      await db.agentSession.update({
+        where: { id: session.id },
+        data: { messageCount: { increment: 2 }, updatedAt: new Date() },
+      });
+
+      return {
+        content: bifrostResult.response!,
+        sessionId: session.id,
+        provider: 'bifrost',
+        agent: { id: agent.id, name: agent.name, role: agent.role },
+        memoriesLoaded: 0,
+        messagesInSession: recentMessages.length + 2,
+      };
+    }
+
+    // --- PLAN & EXECUTE FLOW (fallback) ---
     const now = new Date();
     const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-    const tools = getOpenAITools();
-    const toolDefs = tools.map(t => `${t.function.name}: ${t.function.description} (Args: ${JSON.stringify(t.function.parameters)})`).join('\n');
+    // Les outils viennent des modules enregistrés sur le Bus
+    const busTools = bus.getAllModules().flatMap(m => m.getTools());
+    const toolDefs = busTools.map(t => `${t.name}: ${t.description} (Args: ${JSON.stringify(t.parameters)})`).join('\n');
     
     const plannerPrompt = `Tu es un moteur d'exécution d'outils. Ton UNIQUE rôle est de transformer une demande utilisateur en un plan d'action JSON.
 Date actuelle : ${dateStr} — ${timeStr}.
@@ -253,8 +300,18 @@ RÈGLES STRICTES :
         if (Array.isArray(plan)) {
            const executionResults: string[] = [];
           for (const step of plan) {
-            const res = await executeToolByName(step.tool as any, step.args, params.userId);
-            executionResults.push(`Outil ${step.tool} (${step.thought}): ${res}`);
+            const toolName = step.tool as string;
+            const module = bus.getAllModules().find(m =>
+              m.getTools().some(t => t.name === toolName)
+            );
+            if (module) {
+              const tool = module.getTools().find(t => t.name === toolName);
+              const res = await tool!.execute(step.args, { message: params.message, history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })), sessionId: session.id, userId: params.userId });
+              executionResults.push(`Outil ${toolName} (${step.thought}): ${JSON.stringify(res)}`);
+            } else {
+              const res = await executeToolByName(step.tool as any, step.args, params.userId);
+              executionResults.push(`Outil ${toolName} (${step.thought}): ${res}`);
+            }
           }
           
           const synthesis = await aiChat(params.message, {
