@@ -54,18 +54,18 @@ Chaque module expose une interface unique :
 
 ### Semaine 1 : Fondations du Bus
 
-#### Jour 1 — Audit + Création du squelette
-- [ ] Créer `src/lib/bus/types.ts` (interfaces Module, Message, Context)
-- [ ] Créer `src/lib/bus/orchestrator.ts` (router léger)
-- [ ] Identifier le premier module à extraire (Nutrition)
+#### Jour 1 — Audit + Création du squelette ✅ (31 Mai)
+- [x] Créer `src/lib/bus/types.ts` (interfaces Module, Message, Context)
+- [x] Créer `src/lib/bus/orchestrator.ts` (router léger)
+- [x] Identifier le premier module à extraire (Nutrition)
 
-#### Jour 2 — Module Nutrition
-- [ ] Extraire les outils nutrition de `ai-tools.ts` → `src/lib/modules/nutrition/tools.ts`
-- [ ] Extraire le fallback nutrition → `src/lib/modules/nutrition/fallback.ts`
-- [ ] Créer `src/lib/modules/nutrition/index.ts` (interface Module)
-- [ ] Branch Module Nutrition sur le Bus
+#### Jour 2 — Module Nutrition ✅ (31 Mai)
+- [x] Extraire les outils nutrition de `ai-tools.ts` → `src/lib/modules/nutrition/tools.ts`
+- [x] Extraire le fallback nutrition → `src/lib/modules/nutrition/fallback.ts`
+- [x] Créer `src/lib/modules/nutrition/index.ts` (interface Module)
+- [x] Branch Module Nutrition sur le Bus
 
-#### Jour 3 — Module Sport
+#### Jour 3 — Module Sport (à faire)
 - [ ] Extraire les outils sport de `ai-tools.ts` → `src/lib/modules/sport/tools.ts`
 - [ ] Extraire le fallback sport → `src/lib/modules/sport/fallback.ts`
 - [ ] Créer `src/lib/modules/sport/index.ts`
