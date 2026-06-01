@@ -231,6 +231,32 @@ Rappels importants :
     });
 
     if (bifrostResult.handled) {
+      let resultContent: string;
+      let usedProvider = 'bifrost';
+
+      const isCrudConfirm = bifrostResult.response!.length < 200 && /(enregistré|ajouté|créé|supprimé|séance enregistrée)/i.test(bifrostResult.response!);
+
+      if (isCrudConfirm) {
+        // Confirmation CRUD → pas besoin de LLM
+        resultContent = bifrostResult.response!;
+      } else {
+        // Contenu → wrapping LLM avec la personnalité de l'agent
+        const synthesis = await aiChat(params.message, {
+          func,
+          systemPrompt: `${systemPrompt}
+
+Voici des informations à transmettre à l'utilisateur de façon naturelle, en incarnant TA personnalité unique :
+
+${bifrostResult.response}
+
+Ne lis pas ce bloc tel quel. Reformule avec ton ton, ajoute une touche personnelle, mais garde les informations clés.`,
+          userId: params.userId,
+          history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+        });
+        resultContent = synthesis.success ? synthesis.content : bifrostResult.response!;
+        usedProvider = synthesis.provider;
+      }
+
       await db.agentChatMessage.create({
         data: {
           id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -244,7 +270,7 @@ Rappels importants :
           id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           sessionId: session.id,
           role: 'assistant',
-          content: bifrostResult.response!,
+          content: resultContent,
         },
       });
       await db.agentSession.update({
@@ -253,9 +279,9 @@ Rappels importants :
       });
 
       return {
-        content: bifrostResult.response!,
+        content: resultContent,
         sessionId: session.id,
-        provider: 'bifrost',
+        provider: usedProvider,
         agent: { id: agent.id, name: agent.name, role: agent.role },
         memoriesLoaded: 0,
         messagesInSession: recentMessages.length + 2,

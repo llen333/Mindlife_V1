@@ -23,7 +23,8 @@ export class NutritionModule implements Module {
       const lower = message.toLowerCase();
 
       if (/recette|recettes|marmiton|cuisiner/i.test(lower)) {
-        const query = message.replace(/che(c|r)che|trouve|donne|recette|recettes|de|du|des|marmiton|sur/gi, '').trim();
+        const recipeMatch = message.match(/(?:recette\s+(?:d[eiue]\s+)?|recettes?\s+de\s+)?(.+?)(?:\s*sur\s+marmiton)?$/i);
+        const query = recipeMatch?.[1] || message.replace(/che(c|r)che|trouve|donne|recette|recettes|marmiton/gi, '').replace(/\s+/g, ' ').trim();
         const result = await NUTRITION_TOOLS.search_recipes.execute({ query: query || 'plat principal' }, { userId: context.userId || '' });
         return { success: true, content: result, moduleId: this.id };
       }
