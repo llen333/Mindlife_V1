@@ -65,11 +65,11 @@ Chaque module expose une interface unique :
 - [x] Créer `src/lib/modules/nutrition/index.ts` (interface Module)
 - [x] Branch Module Nutrition sur le Bus
 
-#### Jour 3 — Module Sport (à faire)
-- [ ] Extraire les outils sport de `ai-tools.ts` → `src/lib/modules/sport/tools.ts`
-- [ ] Extraire le fallback sport → `src/lib/modules/sport/fallback.ts`
-- [ ] Créer `src/lib/modules/sport/index.ts`
-- [ ] Branch Module Sport sur le Bus
+#### Jour 3 — Module Sport ✅ (1 Juin)
+- [x] Extraire les outils sport de `ai-tools.ts` → `src/lib/modules/sport/tools.ts` (log_sport_session, workout_generator)
+- [x] Extraire le fallback sport → `src/lib/modules/sport/fallback.ts` (wrapper autour de sport-fallback.ts)
+- [x] Créer `src/lib/modules/sport/index.ts` (interface Module + auto-register sur le Bus)
+- [x] Branch Module Sport sur le Bus (bus.register à l'import)
 
 #### Jour 4 — Module Organisation (Tâches/Événements/Objectifs)
 - [ ] Extraire les outils CRUD tâches/events/goals de `ai-tools.ts`
