@@ -1,4 +1,6 @@
 import { Module, ModuleResponse, MessageContext, ToolDefinition, SkillDefinition } from '@/lib/bus/types';
+import { registry } from '@/lib/bus/registry';
+import manifest from './module.json';
 import { RECHERCHE_TOOLS } from './tools';
 import { getFallback } from './fallback';
 
@@ -62,3 +64,4 @@ export class RechercheModule implements Module {
 import { bus } from '@/lib/bus/orchestrator';
 const rechercheModule = new RechercheModule();
 bus.register(rechercheModule);
+registry.register(manifest);

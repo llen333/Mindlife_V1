@@ -1,4 +1,6 @@
 import { Module, ModuleResponse, MessageContext, ToolDefinition, SkillDefinition } from '@/lib/bus/types';
+import { registry } from '@/lib/bus/registry';
+import manifest from './module.json';
 import { DONNEES_TOOLS } from './tools';
 import { getFallback } from './fallback';
 
@@ -81,3 +83,4 @@ export class DonneesModule implements Module {
 import { bus } from '@/lib/bus/orchestrator';
 const donneesModule = new DonneesModule();
 bus.register(donneesModule);
+registry.register(manifest);

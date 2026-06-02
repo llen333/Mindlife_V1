@@ -34,6 +34,19 @@ export interface Module {
   execute(context: MessageContext): Promise<ModuleResponse>;
   getTools(): ToolDefinition[];
   getSkills(): SkillDefinition[];
+  onLoad?(): void | Promise<void>;
+  onUnload?(): void | Promise<void>;
+  onUpgrade?(newVersion: string): void | Promise<void>;
+}
+
+export interface ModuleManifest {
+  id: string;
+  name: string;
+  version: string;
+  description?: string;
+  author?: string;
+  dependencies?: Record<string, string>;
+  permissions?: string[];
 }
 
 export interface ModuleEventMap {

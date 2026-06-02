@@ -1,5 +1,7 @@
 import { Module, ModuleResponse, MessageContext, ToolDefinition, SkillDefinition } from '@/lib/bus/types';
 import { bus } from '@/lib/bus/orchestrator';
+import { registry } from '@/lib/bus/registry';
+import manifest from './module.json';
 import { NUTRITION_TOOLS } from './tools';
 import { FALLBACK } from './fallback';
 
@@ -78,5 +80,7 @@ export class NutritionModule implements Module {
   }
 }
 
-bus.register(new NutritionModule());
+const nutritionModule = new NutritionModule();
+bus.register(nutritionModule);
+registry.register(manifest);
 

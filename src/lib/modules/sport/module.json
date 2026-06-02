@@ -1,0 +1,7 @@
+{
+  "id": "sport",
+  "name": "Sport",
+  "version": "1.0.0",
+  "description": "Exercices, programmes d'entraînement et suivi sportif",
+  "permissions": ["workouts:read", "workouts:write", "exercises:search"]
+}

@@ -1,5 +1,7 @@
 import { Module, ModuleResponse, MessageContext, ToolDefinition, SkillDefinition } from '@/lib/bus/types';
 import { bus } from '@/lib/bus/orchestrator';
+import { registry } from '@/lib/bus/registry';
+import manifest from './module.json';
 import { ORGANISATION_TOOLS } from './tools';
 import { FALLBACK } from './fallback';
 
@@ -131,4 +133,6 @@ function parseRelativeDate(text: string): string | null {
   return null;
 }
 
-bus.register(new OrganisationModule());
+const organisationModule = new OrganisationModule();
+bus.register(organisationModule);
+registry.register(manifest);

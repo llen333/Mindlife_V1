@@ -1,0 +1,7 @@
+{
+  "id": "donnees",
+  "name": "Données & Logs",
+  "version": "1.0.0",
+  "description": "Notes, poids, sommeil, courses et données personnelles",
+  "permissions": ["data:read", "data:write", "notes:read", "notes:write"]
+}

@@ -1,5 +1,7 @@
 import { Module, ModuleResponse, MessageContext, ToolDefinition, SkillDefinition } from '@/lib/bus/types';
 import { bus } from '@/lib/bus/orchestrator';
+import { registry } from '@/lib/bus/registry';
+import manifest from './module.json';
 import { SPORT_TOOLS } from './tools';
 import { FALLBACK } from './fallback';
 
@@ -86,4 +88,6 @@ export class SportModule implements Module {
   }
 }
 
-bus.register(new SportModule());
+const sportModule = new SportModule();
+bus.register(sportModule);
+registry.register(manifest);

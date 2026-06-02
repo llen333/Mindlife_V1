@@ -1,0 +1,7 @@
+{
+  "id": "organisation",
+  "name": "Organisation",
+  "version": "1.0.0",
+  "description": "Tâches, événements, objectifs et routines quotidiennes",
+  "permissions": ["tasks:read", "tasks:write", "events:read", "events:write"]
+}
