@@ -80,10 +80,10 @@ export class SportModule implements Module {
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'sport-log', name: 'Enregistrement séance', description: 'Enregistrer une séance de sport', allowedRoles: ['coach', 'nutrition', 'assistant'] },
-      { id: 'sport-program', name: 'Programmes entraînement', description: 'Générer des programmes personnalisés', allowedRoles: ['coach', 'assistant'] },
-      { id: 'sport-exercises', name: 'Banque d\'exercices', description: 'Consulter des exercices par muscle', allowedRoles: ['coach', 'assistant'] },
-      { id: 'sport-advice', name: 'Conseils sport', description: 'Donner des conseils sport et motivation', allowedRoles: ['coach', 'assistant'] },
+      { id: 'sport-log', name: 'Enregistrement séance', description: 'Enregistrer une séance de sport', triggers: ['sport', 'séance', 'entraînement', 'workout', 'enregistre sport'], allowedRoles: ['coach', 'nutrition', 'assistant'] },
+      { id: 'sport-program', name: 'Programmes entraînement', description: 'Générer des programmes personnalisés', triggers: ['programme sport', 'plan entraînement', 'programme musculation', 'programme fitness'], allowedRoles: ['coach', 'assistant'] },
+      { id: 'sport-exercises', name: 'Banque d\'exercices', description: 'Consulter des exercices par muscle', triggers: ['exercice pour', 'exercice muscle', 'muscle dos', 'muscle bras', 'exercice'], allowedRoles: ['coach', 'assistant'] },
+      { id: 'sport-advice', name: 'Conseils sport', description: 'Donner des conseils sport et motivation', triggers: ['conseil sport', 'astuce entraînement', 'motivation sport', 'récupération sport'], allowedRoles: ['coach', 'assistant'] },
     ];
   }
 }

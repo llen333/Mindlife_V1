@@ -72,10 +72,10 @@ export class DonneesModule implements Module {
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'notes', name: 'Notes', description: 'Sauvegarder et consulter des notes', allowedRoles: ['psychologist', 'coach', 'nutrition', 'oracle', 'organization', 'assistant'] },
-      { id: 'weight-tracking', name: 'Poids', description: 'Enregistrer des relevés de poids', allowedRoles: ['coach', 'nutrition', 'assistant'] },
-      { id: 'sleep-tracking', name: 'Sommeil', description: 'Logger ses heures de sommeil', allowedRoles: ['psychologist', 'coach', 'assistant'] },
-      { id: 'shopping', name: 'Courses', description: 'Créer et gérer des listes de courses', allowedRoles: ['nutrition', 'organization', 'assistant'] },
+      { id: 'notes', name: 'Notes', description: 'Sauvegarder et consulter des notes', triggers: ['note sauvegarde', 'écris note', 'mémorise', 'souviens toi', 'mes notes', 'affiche note'], allowedRoles: ['psychologist', 'coach', 'nutrition', 'oracle', 'organization', 'assistant'] },
+      { id: 'weight-tracking', name: 'Poids', description: 'Enregistrer des relevés de poids', triggers: ['poids', 'pesée', 'peser', 'kg'], allowedRoles: ['coach', 'nutrition', 'assistant'] },
+      { id: 'sleep-tracking', name: 'Sommeil', description: 'Logger ses heures de sommeil', triggers: ['dormi', 'sommeil', 'coucher', 'réveil', 'qualité sommeil'], allowedRoles: ['psychologist', 'coach', 'assistant'] },
+      { id: 'shopping', name: 'Courses', description: 'Créer et gérer des listes de courses', triggers: ['liste course', 'liste achat', 'shopping', 'course alimentaire'], allowedRoles: ['nutrition', 'organization', 'assistant'] },
     ];
   }
 }

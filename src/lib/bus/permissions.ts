@@ -14,18 +14,18 @@ export interface PermissionCheck {
 
 const DEFAULT_ROLE_PERMISSIONS: Record<string, PermissionString[]> = {
   assistant: [
-    'meals:read', 'meals:write',
-    'workouts:read', 'workouts:write',
+    'meals:read', 'meals:write', 'recipes:search',
+    'workouts:read', 'workouts:write', 'exercises:search',
     'tasks:read', 'tasks:write', 'events:read', 'events:write',
     'web:search', 'web:scrape',
     'data:read', 'data:write', 'notes:read', 'notes:write',
   ],
   coach: [
-    'workouts:read', 'workouts:write',
+    'workouts:read', 'workouts:write', 'exercises:search',
     'data:read', 'notes:read', 'notes:write',
   ],
   nutrition: [
-    'meals:read', 'meals:write',
+    'meals:read', 'meals:write', 'recipes:search',
     'data:read', 'notes:read',
   ],
   oracle: [

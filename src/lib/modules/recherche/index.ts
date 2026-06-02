@@ -55,8 +55,8 @@ export class RechercheModule implements Module {
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'web-search', name: 'Recherche Web', description: 'Chercher sur Internet', allowedRoles: ['oracle', 'assistant'] },
-      { id: 'scrape-url', name: 'Extraction de page', description: 'Lire le contenu d\'une page web', allowedRoles: ['oracle', 'assistant'] },
+      { id: 'web-search', name: 'Recherche Web', description: 'Chercher sur Internet', triggers: ['cherche info', 'recherche web', 'trouve info', 'quel est', 'qu\'est-ce que', 'actualité'], allowedRoles: ['oracle', 'assistant'] },
+      { id: 'scrape-url', name: 'Extraction de page', description: 'Lire le contenu d\'une page web', triggers: ['extrais contenu', 'scrape page', 'contenu de la page', 'résumé article'], allowedRoles: ['oracle', 'assistant'] },
     ];
   }
 }

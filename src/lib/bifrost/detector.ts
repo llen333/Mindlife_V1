@@ -1,5 +1,7 @@
 import { BifrostDecision, DetectionMode } from './types';
 import { bus } from '@/lib/bus/orchestrator';
+import { registry } from '@/lib/bus/registry';
+import { getEmbedding, cosineSimilarity } from '@/lib/rag/embeddings';
 
 interface IntentPattern {
   moduleId: string;
@@ -115,6 +117,44 @@ const INTENT_PATTERNS: IntentPattern[] = [
   },
 ];
 
+function buildDynamicPatterns(): IntentPattern[] {
+  const dynamic: IntentPattern[] = [];
+  
+  // Use registry for dynamic discovery of installed modules
+  const installedModules = registry.getInstalledModules();
+  
+  for (const manifest of installedModules) {
+    const module = bus.getModule(manifest.id);
+    if (module && module.getSkills) {
+      for (const skill of module.getSkills()) {
+        if (skill.triggers && skill.triggers.length > 0) {
+          const escaped = skill.triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+          dynamic.push({
+            moduleId: module.id,
+            intent: skill.id,
+            patterns: [new RegExp(escaped.join('|'), 'i')],
+          });
+        }
+      }
+    }
+  }
+  return dynamic;
+}
+
+function getAllPatterns(): IntentPattern[] {
+  const dynamic = buildDynamicPatterns();
+  const existing = new Set<string>();
+  for (const p of INTENT_PATTERNS) existing.add(`${p.moduleId}:${p.intent}`);
+  const merged = [...INTENT_PATTERNS];
+  for (const p of dynamic) {
+    if (!existing.has(`${p.moduleId}:${p.intent}`)) {
+      merged.push(p);
+      existing.add(`${p.moduleId}:${p.intent}`);
+    }
+  }
+  return merged;
+}
+
 export function getModuleIdsForRole(agentRole?: string): Set<string> {
   if (!agentRole) return new Set(bus.getAllModules().map(m => m.id));
   const allowed = new Set<string>();
@@ -131,7 +171,9 @@ function lightningDetect(message: string, allowedModuleIds?: Set<string>): Bifro
   const lower = message.toLowerCase().trim();
   if (!lower || lower.length < 3) return null;
 
-  for (const entry of INTENT_PATTERNS) {
+  const patterns = getAllPatterns();
+
+  for (const entry of patterns) {
     if (allowedModuleIds && !allowedModuleIds.has(entry.moduleId)) continue;
     for (const pattern of entry.patterns) {
       if (pattern.test(lower)) {
@@ -148,6 +190,52 @@ function lightningDetect(message: string, allowedModuleIds?: Set<string>): Bifro
   return null;
 }
 
+async function vectorDetect(
+  message: string,
+  allowedModuleIds?: Set<string>,
+  threshold = 0.65
+): Promise<BifrostDecision | null> {
+  try {
+    const msgEmbedding = await getEmbedding(message);
+
+    let bestScore = 0;
+    let best: { moduleId: string; intent: string; description: string } | null = null;
+
+    // Use registry for dynamic module discovery
+    const installedModules = registry.getInstalledModules();
+    
+    for (const manifest of installedModules) {
+      const module = bus.getModule(manifest.id);
+      if (!module || !module.getSkills) continue;
+      
+      if (allowedModuleIds && !allowedModuleIds.has(module.id)) continue;
+      
+      for (const skill of module.getSkills()) {
+        const skillText = `${skill.name}: ${skill.description}`;
+        const skillEmbedding = await getEmbedding(skillText);
+        const score = cosineSimilarity(msgEmbedding.vector, skillEmbedding.vector);
+        if (score > bestScore) {
+          bestScore = score;
+          best = { moduleId: module.id, intent: skill.id, description: skill.description };
+        }
+      }
+    }
+
+    if (best && bestScore >= threshold) {
+      return {
+        intent: best.intent,
+        moduleId: best.moduleId,
+        confidence: bestScore >= 0.8 ? 'high' : 'medium',
+        reasoning: `Vector match: ${best.description} (score: ${bestScore.toFixed(3)})`,
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function deepDetect(
   message: string,
   context?: { agentName?: string; role?: string; capabilities?: string[] }
@@ -160,18 +248,18 @@ async function deepDetect(
       : '';
 
     const allowedModuleIds = context?.role ? getModuleIdsForRole(context.role) : null;
+
+    const availableModuleLines = bus.getAllModules()
+      .filter(m => !allowedModuleIds || allowedModuleIds.has(m.id))
+      .map(m => {
+        const manifest = registry.getManifest(m.id);
+        const skills = m.getSkills().map(s => s.description).join(', ');
+        return `${m.id}: ${skills}${manifest?.description ? ` — ${manifest.description}` : ''}`;
+      });
     const availableModules = [
-      'nutrition: repas, recettes, plan alimentaire, courses',
-      'sport: entraînement, exercices, programmes sportifs, séances',
-      'organisation: tâches, rendez-vous, événements, objectifs, productivité',
-      'recherche: recherche web, extraction de contenu de page, actualités',
-      'donnees: notes, poids, sommeil, listes de courses',
+      ...availableModuleLines,
       '(aucun): conversation générale, questions simples',
-    ].filter(line => {
-      if (!allowedModuleIds) return true;
-      const id = line.split(':')[0].trim();
-      return id === '(aucun)' || allowedModuleIds.has(id);
-    });
+    ];
 
     const prompt = `Analyse le message utilisateur et classifie son intention.
 
@@ -181,7 +269,7 @@ Modules disponibles:
 ${availableModules.join('\n')}
 
 Retourne UNIQUEMENT un objet JSON:
-{ "moduleId": "nutrition"|"sport"|"organisation"|null, "intent": "description_courte", "confidence": "high"|"medium"|"low", "reasoning": "10 mots max" }`;
+{ "moduleId": "${bus.getAllModules().map(m => m.id).join('"|"')}"|null, "intent": "description_courte", "confidence": "high"|"medium"|"low", "reasoning": "10 mots max" }`;
 
     const result = await aiChat(prompt, {
       func: 'chat',
@@ -196,7 +284,8 @@ Retourne UNIQUEMENT un objet JSON:
       .trim();
 
     const parsed = JSON.parse(cleaned);
-    if (!parsed.moduleId || !['nutrition', 'sport', 'organisation', 'recherche', 'donnees'].includes(parsed.moduleId)) return null;
+    const validIds = new Set(bus.getAllModules().map(m => m.id));
+    if (!parsed.moduleId || !validIds.has(parsed.moduleId)) return null;
     if (allowedModuleIds && !allowedModuleIds.has(parsed.moduleId)) return null;
 
     return {
@@ -223,10 +312,13 @@ export async function detect(
   }
 
   if (mode === 'deep') {
+    const vectorResult = await vectorDetect(message, allowedModuleIds);
+    if (vectorResult) return vectorResult;
+
     return deepDetect(message, context);
   }
 
   return null;
 }
 
-export { lightningDetect, deepDetect };
+export { lightningDetect, deepDetect, vectorDetect };

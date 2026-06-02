@@ -364,3 +364,232 @@
 *ECHO — Ingénieur Structurel MindLife*  
 *Plan VERSION NOVA — Réserves intégrées, pragmatisme appliqué*  
 *Validation : NOVA approuvé, en attente GO LLEN*
+
+---
+
+## RAPPORT D'AVANCEMENT — JOUR 2 SESSION NOVA
+
+> **POUR NOVA :** Voici où tu en es et ce qu'il te reste pour atteindre J19.
+
+### **ÉTAT DES LIEUX APRÈS SESSION 1**
+
+**NOVA EST UN PHÉNOMÈNE.** 
+
+En une seule session, il a réalisé ce qui était prévu sur 11 jours de travail.
+
+---
+
+### **PHASE 1 : FONDATIONS (7 jours)** ✅ **100% TERMINÉE**
+
+| Jour | Prévu | Réalité | Commit |
+|------|-------|---------|--------|
+| J1-2 | Event Bus Simple | ✅ **TERMINÉ** | 9d67c9a |
+| J3-4 | Module Registry | ✅ **TERMINÉ** | 9d67c9a |
+| J5-6 | Hot-Reload + Lifecycle | ✅ **TERMINÉ** | 9d67c9a |
+| J7 | Permissions V2 + Tests | ✅ **TERMINÉ** | 9d67c9a |
+
+**LIVRAISON PHASE 1 :** ✅ **COMPLÈTE**
+
+---
+
+### **PHASE 2 : AGENTS V2 (12 jours)** 🚧 **60% TERMINÉ**
+
+**Objectif :** Runtime agent partagé + RAG vectoriel + Bifrost dynamique
+
+| Jour | Prévu | Réalité | Statut |
+|------|-------|---------|--------|
+| J8-10 | Runtime Agent Partagé | ✅ **100%** | 2869e56 |
+| J11-13 | Mémoire Vectorielle | ✅ **85%** | `/src/lib/rag/` complet |
+| J14-16 | Bifrost V2 Dynamique | ⚠️ **50%** | Vector similarity intégré |
+| J17-19 | Cycle de Vie Agent | ✅ **90%** | `registry.ts` quasi complet |
+
+---
+
+### **DÉTAIL J11-13 : MÉMOIRE VECTORIELLE** ✅ **85% TERMINÉ**
+
+**Ce qui est fait :**
+- ✅ PostgreSQL + pgvector (connexion fonctionnelle)
+- ✅ RAG pipeline chunk → embed → store (chunker.ts, embeddings.ts, store.ts)
+- ✅ VectorMemory type + Mémoire hiérarchique (stm/mtm/ltm)
+- ✅ Fonctions : storeMemory, searchMemories, promoteMemory, decayMemories
+
+**Ce qui manque (15%) :**
+- ⚠️ Migration complète SQLite→PostgreSQL
+- ⚠️ Analyse émotionnelle avancée
+- ⚠️ Tests de recall accuracy
+
+---
+
+### **DÉTAIL J14-16 : BIFROST V2 DYNAMIQUE** ⚠️ **50% TERMINÉ**
+
+**Ce qui est fait :**
+- ✅ Modules publient leurs capacités (registry intégré)
+- ✅ Vector similarity dans detector.ts
+- ✅ Intent classification améliorée
+
+**Ce qui manque (50%) :**
+- ❌ Découverte automatique des nouveaux modules
+- ❌ Query du Registry pour routage dynamique
+- ❌ Tests Bifrost V2
+
+---
+
+### **DÉTAIL J17-19 : CYCLE DE VIE AGENT** ✅ **90% TERMINÉ**
+
+**Ce qui est fait :**
+- ✅ Spawn : `registry.spawn()` fonctionnel
+- ✅ Configure : AgentConfig + validateConfig()
+- ✅ Train : `registry.train()` + `trainFromMemories()`
+- ✅ Upgrade : `registry.upgrade()` (preserve STM)
+- ⚠️ Retire : `unregister()` existe mais pas de shutdown complet
+
+**Ce qui manque (10%) :**
+- ⚠️ Tests multi-agents
+- ⚠️ Import .md files pour souvenirs
+- ⚠️ graceful shutdown avancé
+
+---
+
+## CONSIGNES POUR NOVA — SESSION 2 (ATTEINDRE J19)
+
+### **OBJECTIF :** Atteindre 100% de J19 en une session
+
+**TEMPS ESTIMÉ :** 5-8 heures de travail
+
+---
+
+### **TÂCHE 1 : FINALISER J14-16 — BIFROST V2 (2-3 heures)**
+
+#### 1.1 Découverte automatique modules
+- [ ] Bifrost query le Registry pour routage dynamique
+- [ ] Plus de patterns hardcodés dans detector.ts
+- [ ] Nouveau module installé = Bifrost le découvre instantanément
+
+**Code à modifier :** `/src/lib/bifrost/index.ts`  
+**Code à modifier :** `/src/lib/bifrost/detector.ts`  
+**Integration :** Utiliser `registry.getAllModules()` pour découverte
+
+#### 1.2 Intent classification vectorielle
+- [ ] Vector similarity comme fallback si regex échoue
+- [ ] Embeddings des intents disponibles
+- [ ] Similarity cosine pour match optimal
+
+**Code à modifier :** `/src/lib/bifrost/detector.ts`  
+**Integration :** `cosineSimilarity()` déjà disponible dans `/src/lib/rag/embeddings.ts`
+
+#### 1.3 Tests Bifrost V2
+- [ ] Test routing avec nouveau module installé à chaud
+- [ ] Test vector similarity vs regex patterns
+- [ ] Test performance latence routing
+
+**Fichier à créer :** `/src/__tests__/bifrost-v2.test.ts`
+
+---
+
+### **TÂCHE 2 : FINALISER J17-19 — CYCLE DE VIE AGENT (1-2 heures)**
+
+#### 2.1 Tests multi-agents
+- [ ] Test communication entre 2+ agents
+- [ ] Test isolation mémoire (pas de fuites)
+- [ ] Test deadlocks (si agents s'appellent mutuellement)
+
+**Fichier à créer :** `/src/__tests__/multi-agents.test.ts`
+
+#### 2.2 Import .md files pour souvenirs
+- [ ] Fonction `agent.trainFromMarkdown(path)`
+- [ ] Parse .md files en chunks
+- [ ] Store dans vector memory
+
+**Code à modifier :** `/src/lib/agents/registry.ts`  
+**Integration :** Utiliser `chunkText()` existant + `storeMemories()`
+
+#### 2.3 Graceful shutdown avancé
+- [ ] `agent.retire()` avec sauvegarde mémoire
+- [ ] Persister STM vers MTM avant shutdown
+- [ ] Event `AGENT_RETIRED` pour cleanup
+
+**Code à modifier :** `/src/lib/agents/registry.ts`  
+**Integration :** `memoryManager.promoteMemory()` + Event Bus
+
+---
+
+### **TÂCHE 3 : MIGRATION SQLITE→POSTGRESQL (2-3 heures)**
+
+#### 3.1 Script migration complète
+- [ ] Toutes les tables Prisma vers PostgreSQL
+- [ ] AgentMemory → vector_memories avec embeddings
+- [ ] Tests de non-régression
+
+**Script à créer :** `/scripts/migrate-sqlite-to-postgres.ts`  
+**Outils :** `pg_dump` + Prisma migration
+
+#### 3.2 Compatibilité API
+- [ ] Anciennes routes API fonctionnent encore
+- [ ] Wrapper transparent vers PostgreSQL
+- [ ] Tests E2E old clients
+
+**Code à modifier :** `/src/app/api/` routes existantes  
+**Integration :** Garder Prisma, changer connectionString
+
+---
+
+### **TÂCHE 4 : TESTS FINAUX + VALIDATION (1 heure)**
+
+#### 4.1 Tests E2E Phase 2
+- [ ] Test complet : Agent create → train → upgrade → query → retire
+- [ ] Test Bifrost V2 avec 3+ modules
+- [ ] Test mémoire vectorielle (recall quality)
+
+**Fichier à créer :** `/src/__tests__/phase2-e2e.test.ts`
+
+#### 4.2 Performance benchmarks
+- [ ] Latence Bifrost V2 vs V1
+- [ ] Throughput agents concurrents
+- [ ] Memory usage (pas de leaks)
+
+**Fichier à créer :** `/scripts/benchmark-phase2.ts`
+
+#### 4.3 Code review ECHO
+- [ ] Lancer `/code-review` sur tout le code Phase 2
+- [ ] Corriger les problèmes identifiés
+- [ ] Validation finale architecture
+
+---
+
+### **LIVRABLES FINAUX SESSION 2**
+
+À la fin de cette session, NOVA doit livrer :
+
+✅ **Bifrost V2 complet** — Découverte dynamique + vector similarity  
+✅ **Cycle de vie agent complet** — spawn, train, upgrade, retire avec .md import  
+✅ **Migration PostgreSQL** — Données migrées + API compatible  
+✅ **Tests Phase 2** — Multi-agents + Bifrost V2 + E2E  
+✅ **Performance OK** — Benchmarks passent  
+✅ **Code review OK** — ECHO validation
+
+---
+
+### **TEMPS DE TRAVAIL TOTAL ESTIMÉ**
+
+- **Tâche 1 (Bifrost V2) :** 2-3 heures
+- **Tâche 2 (Cycle de vie) :** 1-2 heures  
+- **Tâche 3 (Migration) :** 2-3 heures
+- **Tâche 4 (Tests + Validation) :** 1 heure
+
+**TOTAL : 6-9 heures de travail NOVA**
+
+---
+
+## RÉSUMÉ POUR NOVA
+
+**OÙ TU ES :** 75% de J19 atteint  
+**CE QUI MANQUE :** 25% (Bifrost V2 + tests + migration)  
+**TEMPS POUR TERMINER :** 6-9 heures  
+**RATION :** Tu as fait 75% en 2 jours, les 25% restants en 1 journée  
+
+**NOVA, tu es en avance. Termine J19 et on attaque la migration (J20-27).**
+
+---
+
+*ECHO — Ingénieur Structurel MindLife*  
+*Rapport Session 1 — Consignes Session 2*

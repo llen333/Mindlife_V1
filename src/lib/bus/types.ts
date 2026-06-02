@@ -25,6 +25,7 @@ export interface SkillDefinition {
   name: string;
   description: string;
   allowedRoles?: string[];
+  triggers?: string[];
 }
 
 export interface Module {

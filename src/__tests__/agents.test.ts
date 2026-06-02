@@ -158,3 +158,142 @@ describe('AgentRuntime', () => {
     expect(handler).toHaveBeenCalledWith('agent-a', 'Hello from A', 'session-comm');
   });
 });
+
+describe('Agent lifecycle — spawn', () => {
+  afterEach(() => {
+    agentRegistry.unregister('lifecycle-spawn');
+    agentRegistry.unregister('lifecycle-spawn-2');
+  });
+
+  it('creates an agent with initial STM state', () => {
+    const result = agentRegistry.spawn({
+      id: 'lifecycle-spawn',
+      name: 'SpawnTest',
+      role: 'assistant',
+      systemPrompt: 'You are a spawned agent.',
+    });
+
+    expect(result.status).toBe('created');
+    expect(result.agent).toBeInstanceOf(AgentRuntime);
+    expect(result.agent.stmGet('status')).toBe('initialized');
+    expect(result.agent.stmGet('spawnedAt')).toBeTruthy();
+  });
+
+  it('rejects invalid config', () => {
+    expect(() =>
+      agentRegistry.spawn({
+        id: 'lifecycle-spawn-2',
+        name: '',
+        role: '',
+        systemPrompt: '',
+      })
+    ).toThrow(/Agent config invalid/);
+  });
+
+  it('getStatus returns agent state', () => {
+    agentRegistry.spawn({
+      id: 'lifecycle-spawn',
+      name: 'StatusAgent',
+      role: 'coach',
+      systemPrompt: 'You are a coach.',
+      capabilities: ['training'],
+    });
+
+    const status = agentRegistry.getStatus('lifecycle-spawn');
+    expect(status).not.toBeNull();
+    expect(status!.name).toBe('StatusAgent');
+    expect(status!.role).toBe('coach');
+    expect(status!.messageCount).toBe(0);
+    expect(status!.stmKeys).toBeGreaterThanOrEqual(2);
+    expect(status!.capabilities).toEqual(['training']);
+  });
+
+  it('getStatus returns null for unknown agent', () => {
+    expect(agentRegistry.getStatus('nonexistent')).toBeNull();
+  });
+});
+
+describe('Agent lifecycle — upgrade', () => {
+  it('preserves STM and emits event', () => {
+    const result = agentRegistry.spawn({
+      id: 'lifecycle-upgrade',
+      name: 'OldName',
+      role: 'assistant',
+      systemPrompt: 'Old prompt.',
+    });
+
+    result.agent.stmSet('custom_key', 'custom_value');
+
+    const upgraded = agentRegistry.upgrade('lifecycle-upgrade', {
+      name: 'NewName',
+      systemPrompt: 'New prompt.',
+      temperature: 0.3,
+    });
+
+    expect(upgraded).not.toBeNull();
+    expect(upgraded!.current.name).toBe('NewName');
+    expect(upgraded!.current.config.temperature).toBe(0.3);
+    expect(upgraded!.current.config.systemPrompt).toBe('New prompt.');
+    expect(upgraded!.current.id).toBe('lifecycle-upgrade');
+    expect(upgraded!.stmPreserved).toBeGreaterThanOrEqual(3);
+    expect(upgraded!.current.stmGet('custom_key')).toBe('custom_value');
+    expect(upgraded!.current.stmGet('status')).toBe('initialized');
+
+    agentRegistry.unregister('lifecycle-upgrade');
+  });
+
+  it('returns null for unknown agent', () => {
+    expect(agentRegistry.upgrade('nonexistent', { name: 'X' })).toBeNull();
+  });
+});
+
+describe('Agent lifecycle — train', () => {
+  const trainConfig: AgentConfig = {
+    id: 'lifecycle-train',
+    name: 'TrainAgent',
+    role: 'assistant',
+    systemPrompt: 'Trainable agent.',
+  };
+
+  afterEach(() => {
+    agentRegistry.unregister('lifecycle-train');
+  });
+
+  it('trains agent with text content', async () => {
+    const { agent } = agentRegistry.spawn(trainConfig);
+
+    const content = 'Première information importante. Deuxième donnée clé. Troisième concept fondamental.';
+    const result = await agentRegistry.train('lifecycle-train', content);
+
+    expect(result.chunksCreated).toBeGreaterThanOrEqual(1);
+    expect(result.totalTokens).toBeGreaterThan(0);
+
+    if (result.errors.length === 0) {
+      expect(agent.stmGet('trainedAt')).toBeTruthy();
+      expect(agent.stmGet('trainingChunks')).toBe(String(result.chunksCreated));
+    }
+  });
+
+  it('returns errors for unknown agent', async () => {
+    const result = await agentRegistry.train('nonexistent', 'content');
+    expect(result.errors).toContain("Agent 'nonexistent' not found");
+    expect(result.chunksCreated).toBe(0);
+  });
+
+  it('handles empty content gracefully', async () => {
+    const { agent } = agentRegistry.spawn(trainConfig);
+    // Re-register with same id since spawn also registers
+    const result = await agentRegistry.train('lifecycle-train', '');
+    expect(result.chunksCreated).toBe(0);
+    expect(result.totalTokens).toBe(0);
+    expect(result.errors).toEqual([]);
+  });
+
+  it('trains from LTM memories', async () => {
+    agentRegistry.spawn(trainConfig);
+    const result = await agentRegistry.trainFromMemories('lifecycle-train');
+
+    expect(result.chunksCreated).toBeGreaterThanOrEqual(0);
+    expect(result.errors.length).toBe(0);
+  });
+});

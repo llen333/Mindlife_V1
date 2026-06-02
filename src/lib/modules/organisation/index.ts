@@ -91,10 +91,10 @@ export class OrganisationModule implements Module {
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'org-task', name: 'Gestion tâches', description: 'Créer et gérer des tâches', allowedRoles: ['organization', 'assistant'] },
-      { id: 'org-event', name: 'Gestion calendrier', description: 'Créer des événements et rendez-vous', allowedRoles: ['organization', 'assistant'] },
-      { id: 'org-goal', name: 'Objectifs', description: 'Créer et suivre des objectifs', allowedRoles: ['organization', 'assistant'] },
-      { id: 'org-advice', name: 'Conseils productivité', description: 'Donner des conseils d\'organisation', allowedRoles: ['organization', 'assistant'] },
+      { id: 'org-task', name: 'Gestion tâches', description: 'Créer et gérer des tâches', triggers: ['tâche', 'tache', 'todo', 'à faire', 'je dois', 'il faut'], allowedRoles: ['organization', 'assistant'] },
+      { id: 'org-event', name: 'Gestion calendrier', description: 'Créer des événements et rendez-vous', triggers: ['rendez-vous', 'rdv', 'réunion', 'reunion', 'meeting', 'calendrier', 'agenda'], allowedRoles: ['organization', 'assistant'] },
+      { id: 'org-goal', name: 'Objectifs', description: 'Créer et suivre des objectifs', triggers: ['objectif', 'but', 'goal', 'projet', 'je veux atteindre'], allowedRoles: ['organization', 'assistant'] },
+      { id: 'org-advice', name: 'Conseils productivité', description: 'Donner des conseils d\'organisation', triggers: ['conseil organisation', 'astuce productivité', 'gestion temps', 'méthode travail'], allowedRoles: ['organization', 'assistant'] },
     ];
   }
 }

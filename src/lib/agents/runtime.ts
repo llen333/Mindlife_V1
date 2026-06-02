@@ -116,16 +116,36 @@ export class AgentRuntime {
     this.context.messageCount++;
     this.context.currentSessionId = sessionId;
 
-    const memories = await memoryManager.listMemories(this.config.id);
-    const contextBlock = memories
-      .slice(0, 5)
-      .map((m) => `[${m.type}] ${m.key}: ${m.value}`)
-      .join('\n');
+    const sqliteMemories = await memoryManager.listMemories(this.config.id);
+    let vectorMemories: any[] = [];
 
-    const prompt = this.buildPrompt(contextBlock, message);
+    try {
+      const { searchMemories } = await import('@/lib/rag/store');
+      vectorMemories = await searchMemories(this.config.id, message, 3, 0.65);
+    } catch {}
+
+    const contextBlocks = [];
+    if (sqliteMemories.length > 0) {
+      contextBlocks.push('[Mémoire structurée]');
+      contextBlocks.push(...sqliteMemories.slice(0, 3).map(m => `[${m.type}] ${m.key}: ${m.value}`));
+    }
+    if (vectorMemories.length > 0) {
+      contextBlocks.push('\n[Mémoire sémantique]');
+      contextBlocks.push(...vectorMemories.map(m => `- ${m.content} (score: ${m.score?.toFixed(2)})`));
+    }
+
+    const prompt = this.buildPrompt(contextBlocks.join('\n'), message);
     const response = await this.callLLM(prompt);
 
     await memoryManager.extractMemories(this.config.id, message, response);
+
+    try {
+      const { storeMemory, analyzeEmotion } = await import('@/lib/rag/store');
+      const fullExchange = `[User] ${message}\n[${this.config.name}] ${response}`;
+      const { emotion } = analyzeEmotion(message);
+      await storeMemory(this.config.id, fullExchange, { sessionId }, 3, 'mtm', emotion || undefined);
+    } catch {}
+
     return response;
   }
 

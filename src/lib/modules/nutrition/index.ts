@@ -72,10 +72,10 @@ export class NutritionModule implements Module {
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'nutrition-search', name: 'Recherche de recettes', description: 'Chercher des recettes sur Marmiton', allowedRoles: ['nutrition', 'assistant'] },
-      { id: 'nutrition-track', name: 'Suivi des repas', description: 'Enregistrer et consulter les repas', allowedRoles: ['nutrition', 'assistant'] },
-      { id: 'nutrition-plan', name: 'Planification repas', description: 'Créer des plans de repas', allowedRoles: ['nutrition', 'assistant'] },
-      { id: 'nutrition-advice', name: 'Conseils nutrition', description: 'Donner des conseils nutritionnels', allowedRoles: ['nutrition', 'assistant'] },
+      { id: 'nutrition-search', name: 'Recherche de recettes', description: 'Chercher des recettes sur Marmiton', triggers: ['recette', 'cuisiner', 'marmiton', 'ingrédient', 'plat'], allowedRoles: ['nutrition', 'assistant'] },
+      { id: 'nutrition-track', name: 'Suivi des repas', description: 'Enregistrer et consulter les repas', triggers: ['mangé', 'mange', 'repas', 'déjeuner', 'dîner'], allowedRoles: ['nutrition', 'assistant'] },
+      { id: 'nutrition-plan', name: 'Planification repas', description: 'Créer des plans de repas', triggers: ['plan repas', 'menu', 'planning repas', 'programme repas'], allowedRoles: ['nutrition', 'assistant'] },
+      { id: 'nutrition-advice', name: 'Conseils nutrition', description: 'Donner des conseils nutritionnels', triggers: ['conseil manger', 'quoi manger', 'suggestion repas', 'proposition repas'], allowedRoles: ['nutrition', 'assistant'] },
     ];
   }
 }
