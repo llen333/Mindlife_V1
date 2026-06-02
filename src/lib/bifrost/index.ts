@@ -5,10 +5,16 @@ import { MessageContext } from '@/lib/bus/types';
 
 export { type BifrostDecision, type BifrostRouteResult } from './types';
 
+type BifrostContext = Partial<MessageContext> & {
+  agentName?: string;
+  role?: string;
+  capabilities?: string[];
+};
+
 class Bifrost {
   async detectAndRoute(
     message: string,
-    context: Partial<MessageContext> & { agentName?: string; role?: string } = {}
+    context: BifrostContext = {}
   ): Promise<BifrostRouteResult> {
     const msgCtx: MessageContext = {
       message,
@@ -24,32 +30,8 @@ class Bifrost {
     });
 
     if (lightningDecision && lightningDecision.moduleId) {
-      const module = bus.getModule(lightningDecision.moduleId);
-      if (module) {
-        try {
-          const result = await module.execute({
-            ...msgCtx,
-            intent: lightningDecision.intent,
-          });
-
-          return {
-            handled: true,
-            response: result.content,
-            moduleId: lightningDecision.moduleId,
-            decision: lightningDecision,
-          };
-        } catch (e: any) {
-          return {
-            handled: false,
-            response: undefined,
-            decision: {
-              ...lightningDecision,
-              confidence: 'low',
-              reasoning: `Module error: ${e.message}`,
-            },
-          };
-        }
-      }
+      const result = await this.executeModule(lightningDecision.moduleId, msgCtx, lightningDecision);
+      if (result) return result;
     }
 
     // 2. Deep detection (1 LLM call for ambiguous queries)
@@ -57,35 +39,12 @@ class Bifrost {
       const deepDecision = await detect(message, 'deep', {
         agentName: context.agentName,
         role: context.role,
+        capabilities: context.capabilities,
       });
 
       if (deepDecision && deepDecision.moduleId) {
-        const module = bus.getModule(deepDecision.moduleId);
-        if (module) {
-          try {
-            const result = await module.execute({
-              ...msgCtx,
-              intent: deepDecision.intent,
-            });
-
-            return {
-              handled: true,
-              response: result.content,
-              moduleId: deepDecision.moduleId,
-              decision: deepDecision,
-            };
-          } catch (e: any) {
-            return {
-              handled: false,
-              response: undefined,
-              decision: {
-                ...deepDecision,
-                confidence: 'low',
-                reasoning: `Module error: ${e.message}`,
-              },
-            };
-          }
-        }
+        const result = await this.executeModule(deepDecision.moduleId, msgCtx, deepDecision);
+        if (result) return result;
       }
     }
 
@@ -93,6 +52,38 @@ class Bifrost {
       handled: false,
       decision: lightningDecision || undefined,
     };
+  }
+
+  private async executeModule(
+    moduleId: string,
+    context: MessageContext,
+    decision: BifrostDecision
+  ): Promise<BifrostRouteResult | null> {
+    const module = bus.getModule(moduleId);
+    if (!module) return null;
+
+    try {
+      const result = await module.execute({
+        ...context,
+        intent: decision.intent,
+      });
+      return {
+        handled: true,
+        response: result.content,
+        moduleId,
+        decision,
+      };
+    } catch (e: any) {
+      return {
+        handled: false,
+        response: undefined,
+        decision: {
+          ...decision,
+          confidence: 'low' as const,
+          reasoning: `Module error: ${e.message}`,
+        },
+      };
+    }
   }
 }
 

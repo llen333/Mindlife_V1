@@ -884,21 +884,22 @@ export const CATEGORY_ICONS: Record<HabitCategory, string> = {
   creativity: '🎨',
 };
 
-export const CATEGORY_COLORS: Record<HabitCategory, string> = {
-  health: '#ef4444',
-  mind: '#8b5cf6',
-  productivity: '#f59e0b',
-  learning: '#3b82f6',
-  relationships: '#ec4899',
-  finance: '#10b981',
-  spirit: '#6366f1',
-  creativity: '#f97316',
+export const CATEGORY_COLORS: Record<HabitCategory, { bg: string; border: string }> = {
+  health: { bg: 'bg-red-500/20', border: 'border-red-500/40' },
+  mind: { bg: 'bg-purple-500/20', border: 'border-purple-500/40' },
+  productivity: { bg: 'bg-amber-500/20', border: 'border-amber-500/40' },
+  learning: { bg: 'bg-blue-500/20', border: 'border-blue-500/40' },
+  relationships: { bg: 'bg-pink-500/20', border: 'border-pink-500/40' },
+  finance: { bg: 'bg-emerald-500/20', border: 'border-emerald-500/40' },
+  spirit: { bg: 'bg-indigo-500/20', border: 'border-indigo-500/40' },
+  creativity: { bg: 'bg-orange-500/20', border: 'border-orange-500/40' },
 };
 
-export const ROUTINE_TEMPLATES = [
-  {
+export const ROUTINE_TEMPLATES = {
+  morning: {
     id: 'morning-5am',
     title: 'Routine 5AM',
+    name: 'Routine 5AM',
     description: 'Morning routine pour maximiser la journée',
     steps: [
       { title: 'Hydratation', duration: 2, icon: '💧' },
@@ -907,9 +908,10 @@ export const ROUTINE_TEMPLATES = [
       { title: 'Exercice', duration: 30, icon: '🏃' },
     ],
   },
-  {
+  evening: {
     id: 'evening-winddown',
     title: 'Evening Wind-Down',
+    name: 'Evening Wind-Down',
     description: 'Routine soir pour un sommeil optimal',
     steps: [
       { title: 'Review journée', duration: 10, icon: '📝' },
@@ -918,14 +920,14 @@ export const ROUTINE_TEMPLATES = [
       { title: 'Digital Detox', duration: 10, icon: '📵' },
     ],
   },
-];
+};
 
 export const XP_LEVELS = [
-  { level: 1, xp: 0, title: 'Débutant' },
-  { level: 2, xp: 100, title: 'Apprenti' },
-  { level: 3, xp: 250, title: 'Intermédiaire' },
-  { level: 4, xp: 500, title: 'Avancé' },
-  { level: 5, xp: 1000, title: 'Expert' },
-  { level: 6, xp: 2000, title: 'Maître' },
-  { level: 7, xp: 5000, title: 'Légende' },
+  { level: 1, xp: 0, xpRequired: 0, title: 'Débutant' },
+  { level: 2, xp: 100, xpRequired: 100, title: 'Apprenti' },
+  { level: 3, xp: 250, xpRequired: 250, title: 'Intermédiaire' },
+  { level: 4, xp: 500, xpRequired: 500, title: 'Avancé' },
+  { level: 5, xp: 1000, xpRequired: 1000, title: 'Expert' },
+  { level: 6, xp: 2000, xpRequired: 2000, title: 'Maître' },
+  { level: 7, xp: 5000, xpRequired: 5000, title: 'Légende' },
 ];

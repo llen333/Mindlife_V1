@@ -338,7 +338,7 @@ export function useNutritionData(currentUserId: string): UseNutritionDataReturn 
     availableWeeks,
     isPreviewMode,
     previewMeals,
-    savedMeals,
+    savedMeals: savedMeals as any,
     mealTypeFilter,
     isLoadingMeals,
     isSaving,

@@ -1,4 +1,5 @@
 import { BifrostDecision, DetectionMode } from './types';
+import { bus } from '@/lib/bus/orchestrator';
 
 interface IntentPattern {
   moduleId: string;
@@ -114,11 +115,24 @@ const INTENT_PATTERNS: IntentPattern[] = [
   },
 ];
 
-function lightningDetect(message: string): BifrostDecision | null {
+export function getModuleIdsForRole(agentRole?: string): Set<string> {
+  if (!agentRole) return new Set(bus.getAllModules().map(m => m.id));
+  const allowed = new Set<string>();
+  for (const module of bus.getAllModules()) {
+    const skills = module.getSkills();
+    const hasRestrictions = skills.some(s => s.allowedRoles && s.allowedRoles.length > 0);
+    if (!hasRestrictions) { allowed.add(module.id); continue; }
+    if (skills.some(s => s.allowedRoles?.includes(agentRole))) allowed.add(module.id);
+  }
+  return allowed;
+}
+
+function lightningDetect(message: string, allowedModuleIds?: Set<string>): BifrostDecision | null {
   const lower = message.toLowerCase().trim();
   if (!lower || lower.length < 3) return null;
 
   for (const entry of INTENT_PATTERNS) {
+    if (allowedModuleIds && !allowedModuleIds.has(entry.moduleId)) continue;
     for (const pattern of entry.patterns) {
       if (pattern.test(lower)) {
         return {
@@ -136,7 +150,7 @@ function lightningDetect(message: string): BifrostDecision | null {
 
 async function deepDetect(
   message: string,
-  context?: { agentName?: string; role?: string }
+  context?: { agentName?: string; role?: string; capabilities?: string[] }
 ): Promise<BifrostDecision | null> {
   try {
     const { aiChat } = await import('@/lib/ai-provider');
@@ -145,17 +159,26 @@ async function deepDetect(
       ? `\nContexte agent: ${context.agentName} (${context.role || 'assistant'})`
       : '';
 
+    const allowedModuleIds = context?.role ? getModuleIdsForRole(context.role) : null;
+    const availableModules = [
+      'nutrition: repas, recettes, plan alimentaire, courses',
+      'sport: entraînement, exercices, programmes sportifs, séances',
+      'organisation: tâches, rendez-vous, événements, objectifs, productivité',
+      'recherche: recherche web, extraction de contenu de page, actualités',
+      'donnees: notes, poids, sommeil, listes de courses',
+      '(aucun): conversation générale, questions simples',
+    ].filter(line => {
+      if (!allowedModuleIds) return true;
+      const id = line.split(':')[0].trim();
+      return id === '(aucun)' || allowedModuleIds.has(id);
+    });
+
     const prompt = `Analyse le message utilisateur et classifie son intention.
 
 Message: "${message}"${agentContext}
 
 Modules disponibles:
-- nutrition: repas, recettes, plan alimentaire, courses
-- sport: entraînement, exercices, programmes sportifs, séances
-- organisation: tâches, rendez-vous, événements, objectifs, productivité
-- recherche: recherche web, extraction de contenu de page, actualités
-- donnees: notes, poids, sommeil, listes de courses
-- (aucun): conversation générale, questions simples
+${availableModules.join('\n')}
 
 Retourne UNIQUEMENT un objet JSON:
 { "moduleId": "nutrition"|"sport"|"organisation"|null, "intent": "description_courte", "confidence": "high"|"medium"|"low", "reasoning": "10 mots max" }`;
@@ -174,6 +197,7 @@ Retourne UNIQUEMENT un objet JSON:
 
     const parsed = JSON.parse(cleaned);
     if (!parsed.moduleId || !['nutrition', 'sport', 'organisation', 'recherche', 'donnees'].includes(parsed.moduleId)) return null;
+    if (allowedModuleIds && !allowedModuleIds.has(parsed.moduleId)) return null;
 
     return {
       intent: parsed.intent || 'unknown',
@@ -189,10 +213,12 @@ Retourne UNIQUEMENT un objet JSON:
 export async function detect(
   message: string,
   mode: DetectionMode = 'lightning',
-  context?: { agentName?: string; role?: string }
+  context?: { agentName?: string; role?: string; capabilities?: string[] }
 ): Promise<BifrostDecision | null> {
+  const allowedModuleIds = context?.role ? getModuleIdsForRole(context.role) : undefined;
+
   if (mode === 'lightning') {
-    const result = lightningDetect(message);
+    const result = lightningDetect(message, allowedModuleIds);
     if (result) return result;
   }
 

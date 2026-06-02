@@ -62,14 +62,14 @@ class LegacyModule implements Module {
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'web-search', name: 'Recherche Web', description: 'Chercher sur Internet' },
-      { id: 'task-manage', name: 'Gestion tâches', description: 'Créer et gérer des tâches' },
-      { id: 'event-manage', name: 'Gestion événements', description: 'Créer des événements' },
-      { id: 'goal-manage', name: 'Gestion objectifs', description: 'Créer des objectifs' },
-      { id: 'note-manage', name: 'Notes', description: 'Prendre des notes' },
-      { id: 'data-query', name: 'Analyse données', description: 'Interroger les données utilisateur' },
-      { id: 'code-exec', name: 'Exécution code', description: 'Exécuter du code' },
-      { id: 'image-gen', name: 'Images', description: 'Rechercher des images' },
+      { id: 'web-search', name: 'Recherche Web', description: 'Chercher sur Internet', allowedRoles: ['oracle', 'assistant'] },
+      { id: 'task-manage', name: 'Gestion tâches', description: 'Créer et gérer des tâches', allowedRoles: ['organization', 'assistant'] },
+      { id: 'event-manage', name: 'Gestion événements', description: 'Créer des événements', allowedRoles: ['organization', 'assistant'] },
+      { id: 'goal-manage', name: 'Gestion objectifs', description: 'Créer des objectifs', allowedRoles: ['organization', 'assistant'] },
+      { id: 'note-manage', name: 'Notes', description: 'Prendre des notes', allowedRoles: ['psychologist', 'coach', 'nutrition', 'oracle', 'organization', 'assistant'] },
+      { id: 'data-query', name: 'Analyse données', description: 'Interroger les données utilisateur', allowedRoles: ['oracle', 'assistant'] },
+      { id: 'code-exec', name: 'Exécution code', description: 'Exécuter du code', allowedRoles: ['assistant'] },
+      { id: 'image-gen', name: 'Images', description: 'Rechercher des images', allowedRoles: ['assistant'] },
     ];
   }
 }

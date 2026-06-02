@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+// @ts-expect-error - Bun module
 import { $ } from 'bun';
 
 console.log('🧹 Clearing all Next.js caches...');

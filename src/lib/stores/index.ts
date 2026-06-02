@@ -525,7 +525,7 @@ export function useStore<T = CombinedState>(selector?: (state: CombinedState) =>
   }, [currentUserId, dataLoaded]);
   
   // Construire l'état combiné - mémorisé avec useMemo pour éviter les re-renders
-  const combinedState = useMemo<CombinedState>(() => ({
+  const combinedState = useMemo(() => ({
     // User
     currentUserId,
     users,
@@ -628,7 +628,7 @@ export function useStore<T = CombinedState>(selector?: (state: CombinedState) =>
     
     // Data loading
     loadAllData,
-  }), [
+  }) as CombinedState, [
     currentUserId, users, userProfile, dataLoaded, userActions,
     language, theme, sidebarOpen, isAssistantOpen, isLoading, isRecording, settingsActions,
     activePanel, selectedCategory, navigationActions,

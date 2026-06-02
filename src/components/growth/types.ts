@@ -36,15 +36,21 @@ export interface CreateGoalInput {
   milestones: Milestone[];
   identityStatement?: string;
   deadline?: Date;
+  philosophy?: string;
 }
 
 export interface CreateJournalInput {
-  title: string;
-  content: string;
+  title?: string;
+  content?: string;
   mood: 'neutral' | 'great' | 'good' | 'bad' | 'terrible';
   gratitude?: string[];
   wins?: string[];
   challenges?: string[];
+  lessons?: string[];
+  priorities?: string[];
+  reflection?: string;
+  affirmation?: string;
+  nevilleRevision?: string;
 }
 
 export interface GrowthHabit {
@@ -61,6 +67,9 @@ export interface GrowthHabit {
   totalCompletions: number;
   createdAt: Date;
   lastCompletedAt?: Date;
+  isActive: boolean;
+  completedToday?: boolean;
+  linkedGoalId?: string;
 }
 
 export type HabitCategory = 
@@ -78,10 +87,15 @@ export interface GrowthJournal {
   date: Date;
   title: string;
   content: string;
-  mood: 'neutral' | 'great' | 'good' | 'bad' | 'terrible';
+  mood: string;
   gratitude?: string[];
   wins?: string[];
   challenges?: string[];
+  lessons?: string[];
+  priorities?: string[];
+  reflection?: string;
+  affirmation?: string;
+  nevilleRevision?: string;
   createdAt: Date;
 }
 
@@ -91,6 +105,15 @@ export interface GrowthStats {
   currentStreak: number;
   bestStreak: number;
   totalCompletions: number;
+  activeHabits: number;
+  longestStreak: number;
+  weeklyCompletion: number;
+  monthlyCompletion: number;
+  totalXp: number;
+  level: number;
+  achievementsUnlocked?: number;
+  goalsCompleted: number;
+  journalsWritten: number;
 }
 
 export interface IdentityStatement {
@@ -113,9 +136,11 @@ export interface WeeklyReview {
 export interface Achievement {
   id: string;
   title: string;
+  name?: string;
   description: string;
   icon: string;
   unlockedAt?: Date;
+  isUnlocked?: boolean;
 }
 
 // ============================================
@@ -149,6 +174,7 @@ export interface RoutineStep {
   duration?: number; // minutes
   order: number;
   isCompleted: boolean;
+  icon?: string;
 }
 
 export interface GrowthGoal {
@@ -176,6 +202,7 @@ export interface Milestone {
   dueDate?: string;
   targetValue?: number;
   completed: boolean;
+  isCompleted?: boolean;
   order: number;
 }
 

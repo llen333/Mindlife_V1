@@ -120,8 +120,11 @@ export function GoalModal({ isOpen, onClose, onSubmit, onUpdate, onDelete, goal 
       deadline: deadline ? new Date(deadline) : undefined,
       identityStatement: type === 'identity' ? identityStatement : undefined,
       milestones: milestones.map((m, i) => ({
+        id: `milestone-${i}`,
         title: m.title,
         targetValue: m.targetValue,
+        completed: false,
+        isCompleted: false,
         order: i,
       })),
     };

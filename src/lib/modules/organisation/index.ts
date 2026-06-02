@@ -89,10 +89,10 @@ export class OrganisationModule implements Module {
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'org-task', name: 'Gestion tâches', description: 'Créer et gérer des tâches' },
-      { id: 'org-event', name: 'Gestion calendrier', description: 'Créer des événements et rendez-vous' },
-      { id: 'org-goal', name: 'Objectifs', description: 'Créer et suivre des objectifs' },
-      { id: 'org-advice', name: 'Conseils productivité', description: 'Donner des conseils d\'organisation' },
+      { id: 'org-task', name: 'Gestion tâches', description: 'Créer et gérer des tâches', allowedRoles: ['organization', 'assistant'] },
+      { id: 'org-event', name: 'Gestion calendrier', description: 'Créer des événements et rendez-vous', allowedRoles: ['organization', 'assistant'] },
+      { id: 'org-goal', name: 'Objectifs', description: 'Créer et suivre des objectifs', allowedRoles: ['organization', 'assistant'] },
+      { id: 'org-advice', name: 'Conseils productivité', description: 'Donner des conseils d\'organisation', allowedRoles: ['organization', 'assistant'] },
     ];
   }
 }

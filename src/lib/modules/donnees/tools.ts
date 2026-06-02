@@ -128,7 +128,7 @@ export const DONNEES_TOOLS = {
           quality: quality || 3,
           date: date ? new Date(date as string) : wakeDate,
           notes: notes || null,
-        },
+        } as any,
       });
       const h = Math.floor(durationHours);
       const m = Math.round((durationHours - h) * 60);

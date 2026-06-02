@@ -78,10 +78,10 @@ export class SportModule implements Module {
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'sport-log', name: 'Enregistrement séance', description: 'Enregistrer une séance de sport' },
-      { id: 'sport-program', name: 'Programmes entraînement', description: 'Générer des programmes personnalisés' },
-      { id: 'sport-exercises', name: 'Banque d\'exercices', description: 'Consulter des exercices par muscle' },
-      { id: 'sport-advice', name: 'Conseils sport', description: 'Donner des conseils sport et motivation' },
+      { id: 'sport-log', name: 'Enregistrement séance', description: 'Enregistrer une séance de sport', allowedRoles: ['coach', 'nutrition', 'assistant'] },
+      { id: 'sport-program', name: 'Programmes entraînement', description: 'Générer des programmes personnalisés', allowedRoles: ['coach', 'assistant'] },
+      { id: 'sport-exercises', name: 'Banque d\'exercices', description: 'Consulter des exercices par muscle', allowedRoles: ['coach', 'assistant'] },
+      { id: 'sport-advice', name: 'Conseils sport', description: 'Donner des conseils sport et motivation', allowedRoles: ['coach', 'assistant'] },
     ];
   }
 }

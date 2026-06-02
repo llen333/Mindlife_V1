@@ -10,7 +10,7 @@ import type {
 } from '../types';
 
 export function useGrowthData() {
-  const { user } = useStore();
+  const { userProfile: user } = useStore();
   const [isLoading, setIsLoading] = useState(true);
   
   // Data states
@@ -26,7 +26,9 @@ export function useGrowthData() {
     activeHabits: 0,
     completedToday: 0,
     currentStreak: 0,
+    bestStreak: 0,
     longestStreak: 0,
+    totalCompletions: 0,
     weeklyCompletion: 0,
     monthlyCompletion: 0,
     totalXp: 0,

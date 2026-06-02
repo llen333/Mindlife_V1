@@ -22,7 +22,7 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
   const [type, setType] = useState<'morning' | 'evening'>('morning');
   const [description, setDescription] = useState('');
   const [scheduledTime, setScheduledTime] = useState('');
-  const [steps, setSteps] = useState<{ title: string; duration: number }[]>([]);
+  const [steps, setSteps] = useState<{ title: string; duration: number; icon?: string; name?: string }[]>([]);
   const [newStepName, setNewStepName] = useState('');
   const [newStepDuration, setNewStepDuration] = useState(5);
   const [saving, setSaving] = useState(false);
@@ -37,7 +37,8 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
         setScheduledTime(routine.timeOfDay || '');
         setSteps((routine.steps as RoutineStep[]).map(s => ({
           title: s.title,
-          duration: s.duration,
+          duration: s.duration ?? 5,
+          icon: s.icon,
         })));
       } else {
         setName('');
@@ -87,8 +88,9 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
     setName(template.name);
     setType(templateType);
     setSteps(template.steps.map(s => ({
-      title: s.name,
+      title: s.title,
       duration: s.duration,
+      icon: s.icon,
     })));
   };
 
@@ -105,6 +107,7 @@ export function RoutineModal({ isOpen, onClose, onSubmit, routine }: RoutineModa
       timeOfDay: scheduledTime,
       duration: steps.reduce((sum, s) => sum + s.duration, 0),
       steps: steps.map((s, i) => ({
+        id: `step-${i}`,
         title: s.title,
         duration: s.duration,
         order: i,

@@ -41,11 +41,11 @@ export function DailyJournal({ journals, onSave, isLoading }: DailyJournalProps)
     // Use setTimeout to defer setState calls outside the effect
     const timer = setTimeout(() => {
       if (journal) {
-        setMood(journal.mood as 1 | 2 | 3 | 4 | 5);
+        setMood(journal.mood as unknown as 1 | 2 | 3 | 4 | 5);
         setGratitude(journal.gratitude?.length === 3 ? journal.gratitude : ['', '', '']);
-        setWins(journal.wins?.length > 0 ? journal.wins : ['']);
-        setLessons(journal.lessons?.length > 0 ? journal.lessons : ['']);
-        setPriorities(journal.priorities?.length === 3 ? journal.priorities : ['', '', '']);
+        setWins(journal.wins?.length ? journal.wins! : ['']);
+        setLessons(journal.lessons?.length ? journal.lessons! : ['']);
+        setPriorities(journal.priorities?.length === 3 ? journal.priorities! : ['', '', '']);
         setReflection(journal.reflection || '');
         setAffirmation(journal.affirmation || '');
         setNevilleRevision(journal.nevilleRevision || '');
@@ -67,8 +67,9 @@ export function DailyJournal({ journals, onSave, isLoading }: DailyJournalProps)
 
   const handleSave = async () => {
     setSaving(true);
+    const moodMap: Record<number, string> = { 1: 'bad', 2: 'bad', 3: 'neutral', 4: 'good', 5: 'great' };
     await onSave({
-      mood,
+      mood: moodMap[mood] as 'neutral' | 'great' | 'good' | 'bad' | 'terrible',
       gratitude: gratitude.filter(g => g.trim()),
       wins: wins.filter(w => w.trim()),
       lessons: lessons.filter(l => l.trim()),
@@ -76,7 +77,7 @@ export function DailyJournal({ journals, onSave, isLoading }: DailyJournalProps)
       reflection: reflection || undefined,
       affirmation: affirmation || undefined,
       nevilleRevision: nevilleRevision || undefined,
-    }, currentDate);
+    });
     setSaving(false);
   };
 

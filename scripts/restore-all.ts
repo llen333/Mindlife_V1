@@ -293,7 +293,7 @@ async function main() {
               hrv: 45 + Math.floor(Math.random() * 10),
               recoveryScore: 70 + Math.floor(Math.random() * 20),
               energyLevel: 60 + Math.floor(Math.random() * 30),
-            },
+            } as any,
           });
         }
         console.log('  ✅ 30 jours de biométrie générés');

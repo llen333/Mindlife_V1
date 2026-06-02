@@ -65,15 +65,15 @@ export class DonneesModule implements Module {
   }
 
   getTools(): ToolDefinition[] {
-    return Object.values(DONNEES_TOOLS);
+    return Object.values(DONNEES_TOOLS) as ToolDefinition[];
   }
 
   getSkills(): SkillDefinition[] {
     return [
-      { id: 'notes', name: 'Notes', description: 'Sauvegarder et consulter des notes' },
-      { id: 'weight-tracking', name: 'Poids', description: 'Enregistrer des relevés de poids' },
-      { id: 'sleep-tracking', name: 'Sommeil', description: 'Logger ses heures de sommeil' },
-      { id: 'shopping', name: 'Courses', description: 'Créer et gérer des listes de courses' },
+      { id: 'notes', name: 'Notes', description: 'Sauvegarder et consulter des notes', allowedRoles: ['psychologist', 'coach', 'nutrition', 'oracle', 'organization', 'assistant'] },
+      { id: 'weight-tracking', name: 'Poids', description: 'Enregistrer des relevés de poids', allowedRoles: ['coach', 'nutrition', 'assistant'] },
+      { id: 'sleep-tracking', name: 'Sommeil', description: 'Logger ses heures de sommeil', allowedRoles: ['psychologist', 'coach', 'assistant'] },
+      { id: 'shopping', name: 'Courses', description: 'Créer et gérer des listes de courses', allowedRoles: ['nutrition', 'organization', 'assistant'] },
     ];
   }
 }

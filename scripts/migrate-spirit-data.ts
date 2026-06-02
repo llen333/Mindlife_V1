@@ -53,7 +53,7 @@ async function migrateSpiritData() {
             title: `Conversation du ${memo.createdAt.toLocaleDateString('fr-FR')}`,
             createdAt: memo.createdAt,
             updatedAt: memo.updatedAt,
-          },
+          } as any,
         });
 
         // Créer les messages
@@ -64,7 +64,7 @@ async function migrateSpiritData() {
               role: msg.role,
               content: msg.content,
               createdAt: msg.timestamp ? new Date(msg.timestamp) : new Date(),
-            },
+            } as any,
           });
         }
 

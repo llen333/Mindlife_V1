@@ -1,10 +1,12 @@
 import { db } from '@/lib/db';
 import { aiChat } from '@/lib/ai-provider';
 import { AIFunction } from '@/lib/ai-config';
-import { getOpenAITools, executeToolByName } from '@/lib/ai-tools';
+import { executeToolByName } from '@/lib/ai-tools';
 import { bifrost } from '@/lib/bifrost';
 import { bus } from '@/lib/bus/orchestrator';
 import '@/lib/modules';
+import { memoryManager, type MemoryRecord } from './agent-memory';
+import { sessionManager, type SessionPreview } from './agent-session';
 
 export interface ProcessMessageParams {
   agentId: string;
@@ -33,32 +35,6 @@ export interface ProcessMessageResult {
   agent: { id: string; name: string; role: string };
   memoriesLoaded: number;
   messagesInSession: number;
-}
-
-export interface SessionPreview {
-  id: string;
-  title: string;
-  messageCount: number;
-  updatedAt: Date;
-  preview: string;
-}
-
-export interface MemoryRecord {
-  id: string;
-  agentId: string;
-  type: string;
-  key: string;
-  value: string;
-  importance: number;
-  memoryLevel: string;
-  emotion: string | null;
-  tags: string | null;
-  refCount: number;
-  isArchived: boolean;
-  sourceSessionId: string | null;
-  sourceTitle: string | null;
-  createdAt: string;
-  updatedAt: string;
 }
 
 const ROLE_TO_FUNCTION: Record<string, AIFunction> = {
@@ -150,7 +126,6 @@ class AgentService {
       });
     }
 
-    // Load memories: LTM first (always), then high-importance MTM
     const [ltmMemories, mtmMemories] = await Promise.all([
       db.agentMemory.findMany({
         where: { agentId: params.agentId, memoryLevel: 'ltm', isArchived: false },
@@ -202,31 +177,26 @@ Rappels importants :
 
     const func = ROLE_TO_FUNCTION[agent.role] || 'assistant';
 
-    // Helper pour extraire le JSON des blocs markdown
     const extractJSON = (text: string) => {
-      // 1. Tente de trouver un bloc de code JSON
       const jsonBlock = text.match(/```json\s*([\s\S]*?)\s*```/);
       if (jsonBlock) return jsonBlock[1].trim();
-      
-      // 2. Tente de trouver un tableau JSON n'importe où dans le texte
       const arrayMatch = text.match(/\[\s*\{[\s\S]*?\}\s*\]/);
       if (arrayMatch) return arrayMatch[0].trim();
-      
-      // 3. Nettoyage final pour essayer de sauver le JSON
       const cleaned = text.trim();
       if (cleaned.startsWith('[') && cleaned.endsWith(']')) return cleaned;
-      
       return text.trim();
     };
 
-    // ============================================
-    // BIFROST: détection et routage rapide
-    // ============================================
+    const agentCapabilities = agent.capabilities
+      ? (JSON.parse(agent.capabilities) as string[])
+      : [];
+
     const bifrostResult = await bifrost.detectAndRoute(params.message, {
       userId: params.userId,
       sessionId: session.id,
       agentName: agent.name,
       role: agent.role,
+      capabilities: agentCapabilities,
       history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
     });
 
@@ -237,10 +207,8 @@ Rappels importants :
       const isCrudConfirm = bifrostResult.response!.length < 200 && /(enregistré|ajouté|créé|supprimé|séance enregistrée)/i.test(bifrostResult.response!);
 
       if (isCrudConfirm) {
-        // Confirmation CRUD → pas besoin de LLM
         resultContent = bifrostResult.response!;
       } else {
-        // Contenu → wrapping LLM avec la personnalité de l'agent
         const synthesis = await aiChat(params.message, {
           func,
           systemPrompt: `${systemPrompt}
@@ -288,15 +256,13 @@ Ne lis pas ce bloc tel quel. Reformule avec ton ton, ajoute une touche personnel
       };
     }
 
-    // --- PLAN & EXECUTE FLOW (fallback) ---
     const now = new Date();
     const dateStr = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const timeStr = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-    // Les outils viennent des modules enregistrés sur le Bus
     const busTools = bus.getAllModules().flatMap(m => m.getTools());
     const toolDefs = busTools.map(t => `${t.name}: ${t.description} (Args: ${JSON.stringify(t.parameters)})`).join('\n');
-    
+
     const plannerPrompt = `Tu es un moteur d'exécution d'outils. Ton UNIQUE rôle est de transformer une demande utilisateur en un plan d'action JSON.
 Date actuelle : ${dateStr} — ${timeStr}.
 Outils disponibles :
@@ -339,7 +305,7 @@ RÈGLES STRICTES :
               executionResults.push(`Outil ${toolName} (${step.thought}): ${res}`);
             }
           }
-          
+
           const synthesis = await aiChat(params.message, {
             func,
             systemPrompt: `Tu es l'agent ${agent.name}. Voici les résultats des outils exécutés pour répondre à l'utilisateur :
@@ -357,14 +323,13 @@ Formule une réponse naturelle, chaleureuse et complète en français. Ne mentio
         resultContent = planningResult.content;
       }
     } else {
-      // FALLBACK : Si le LLM a discuté au lieu de planifier, on tente la détection par mots-clés
       const { detectAndExecute } = await import('@/lib/agent-tools');
       const toolResult = await detectAndExecute(params.message, params.userId);
-      
+
       if (toolResult) {
         const synthesis = await aiChat(params.message, {
           func,
-          systemPrompt: `L'utilisateur a demandé une action. Voici le résultat obtenu : ${toolResult.output}. 
+          systemPrompt: `L'utilisateur a demandé une action. Voici le résultat obtenu : ${toolResult.output}.
 Formule une réponse naturelle et chaleureuse en français.`,
           userId: params.userId,
           history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
@@ -375,7 +340,6 @@ Formule une réponse naturelle et chaleureuse en français.`,
         resultContent = planningResult.content || "Je n'ai pas pu générer de réponse.";
       }
     }
-
 
     await db.agentChatMessage.create({
       data: {
@@ -403,15 +367,13 @@ Formule une réponse naturelle et chaleureuse en français.`,
       },
     });
 
-    await this.extractMemories(agent.id, params.message, resultContent);
+    await memoryManager.extractMemories(agent.id, params.message, resultContent);
 
-    // Fire-and-forget: run memory synthesis (non-blocking)
-    this.synthesizeMemories(agent.id, params.message, resultContent, session.id, agent.name).catch(e =>
+    memoryManager.synthesizeMemories(agent.id, params.message, resultContent, session.id, agent.name).catch(e =>
       console.error('[MEMORY-SYNTH] Error:', e)
     );
 
-    // Increment refCount for referenced memories
-    await this.incrementMemoryRefs(agent.id, memories, params.message);
+    await memoryManager.incrementMemoryRefs(agent.id, memories, params.message);
 
     return {
       content: resultContent,
@@ -423,230 +385,21 @@ Formule une réponse naturelle et chaleureuse en français.`,
     };
   }
 
-  private async incrementMemoryRefs(agentId: string, loadedMemories: any[], userMessage: string) {
-    const msg = userMessage.toLowerCase();
-    for (const mem of loadedMemories) {
-      const keyLower = mem.key.replace(/_/g, ' ').toLowerCase();
-      if (msg.includes(keyLower) || msg.includes(mem.key.toLowerCase())) {
-        try {
-          await db.agentMemory.update({
-            where: { id: mem.id },
-            data: { refCount: { increment: 1 }, updatedAt: new Date() },
-          });
-        } catch {}
-      }
-    }
-  }
+  // ==================== DELÉGATION MÉMOIRE ====================
+  getMemoriesCountByLevel(agentId: string) { return memoryManager.getMemoriesCountByLevel(agentId); }
+  listMemories(agentId: string, level?: string) { return memoryManager.listMemories(agentId, level); }
+  createMemory(agentId: string, data: Parameters<typeof memoryManager.createMemory>[1]) { return memoryManager.createMemory(agentId, data); }
+  updateMemory(memoryId: string, data: Parameters<typeof memoryManager.updateMemory>[1]) { return memoryManager.updateMemory(memoryId, data); }
+  deleteMemory(memoryId: string) { return memoryManager.deleteMemory(memoryId); }
+  consolidateMemories(agentId: string) { return memoryManager.consolidateMemories(agentId); }
+  importMemoriesFromMarkdown(agentId: string, markdown: string, sourceTitle?: string) { return memoryManager.importMemoriesFromMarkdown(agentId, markdown, sourceTitle); }
 
-  private async extractMemories(agentId: string, userMessage: string, aiResponse: string) {
-    const extractions: Array<{ type: string; key: string; value: string; importance: number }> = [];
+  // ==================== DELÉGATION SESSION ====================
+  listSessions(agentId: string, limit = 10) { return sessionManager.listSessions(agentId, limit); }
+  getSessionMessages(sessionId: string) { return sessionManager.getSessionMessages(sessionId); }
+  getAgentStats(agentId: string) { return sessionManager.getAgentStats(agentId); }
 
-    const patterns = [
-      { regex: /je m'appelle\s+(\w+)/i, type: 'context', key: 'nom_utilisateur', importance: 5 },
-      { regex: /j'ai\s+(\d+)\s*ans/i, type: 'context', key: 'age_utilisateur', importance: 4 },
-      { regex: /je suis\s+(.+?)(?:\.|!|\?|$)/i, type: 'context', key: 'identite', importance: 4 },
-      { regex: /(?:mon objectif|je veux|j'aimerais|je souhaite)\s+(.+?)(?:\.|!|\?|$)/i, type: 'learning', key: 'objectif', importance: 5 },
-      { regex: /je me sens\s+(.+?)(?:\.|!|\?|$)/i, type: 'learning', key: 'ressenti', importance: 3 },
-      { regex: /j'aime\s+(.+?)(?:\.|!|\?|$)/i, type: 'preference', key: 'aime', importance: 3 },
-      { regex: /(?:j'ai du mal|je n'arrive pas|je lutte avec)\s+(.+?)(?:\.|!|\?|$)/i, type: 'learning', key: 'difficulte', importance: 4 },
-      { regex: /(?:je travaille|mon travail|c'est un)\s+(.+?)(?:\.|!|\?|$)/i, type: 'context', key: 'travail', importance: 3 },
-    ];
-
-    for (const { regex, type, key, importance } of patterns) {
-      const match = userMessage.match(regex);
-      if (match) {
-        const value = match[1].trim();
-        if (value.length > 2 && value.length < 200) {
-          const suffix = match[0].slice(0, 30).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
-          const uniqueKey = `${key}_${suffix}`;
-          extractions.push({ type, key: uniqueKey, value, importance });
-        }
-      }
-    }
-
-    for (const extraction of extractions) {
-      const existing = await db.agentMemory.findFirst({
-        where: { agentId, type: extraction.type, key: { startsWith: extraction.key.split('_')[0] } },
-      });
-
-      if (existing) {
-        if (existing.importance < extraction.importance) {
-          await db.agentMemory.update({
-            where: { id: existing.id },
-            data: { value: extraction.value, importance: extraction.importance, updatedAt: new Date() },
-          });
-        }
-      } else {
-        await db.agentMemory.create({
-          data: {
-            id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            agentId,
-            type: extraction.type,
-            key: extraction.key,
-            value: extraction.value,
-            importance: extraction.importance,
-            memoryLevel: 'ltm',
-          },
-        });
-      }
-    }
-  }
-
-  private async synthesizeMemories(
-    agentId: string,
-    userMessage: string,
-    aiResponse: string,
-    sessionId: string,
-    agentName: string
-  ) {
-    const extractionPrompt = `Tu es un extracteur de mémoire agentique pour ${agentName}. Analyse cet échange et extrait des souvenirs au format MTM (moyen terme).
-
-Échange Utilisateur :
-"${userMessage.slice(0, 1000)}"
-
-Réponse de ${agentName} :
-"${aiResponse.slice(0, 1000)}"
-
-Instructions : extrais si pertinent :
-1. ÉMOTIONS exprimées par l'utilisateur (joie, tristesse, colère, peur, surprise, confiance, anticipation)
-2. PATTERNS de pensée ou comportement récurrents
-3. APPRENTISSAGES ou insights de la conversation
-4. RÉFLEXIONS philosophiques ou stratégiques
-
-Retourne UNIQUEMENT un tableau JSON valide (ou [] si rien à extraire) :
-[{ "type": "mtm_emotion"|"mtm_pattern"|"mtm_learning"|"mtm_reflection", "key": "identifiant_court", "value": "description concise", "emotion": "joie"|null, "importance": 1-5 }]`;
-
-    const result = await aiChat('Extrais les souvenirs de cet échange.', {
-      func: 'chat',
-      systemPrompt: extractionPrompt,
-    });
-
-    if (!result.success || !result.content) return;
-
-    try {
-      const jsonStr = result.content.replace(/```json\s*|\s*```/g, '').trim();
-      const entries = JSON.parse(jsonStr);
-      if (!Array.isArray(entries)) return;
-
-      for (const entry of entries) {
-        if (!entry.type || !entry.key || !entry.value) continue;
-        if (entry.type === 'mtm_emotion' && !entry.emotion) continue;
-
-        await db.agentMemory.create({
-          data: {
-            id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            agentId,
-            type: entry.type,
-            key: entry.key,
-            value: entry.value,
-            importance: entry.importance || 3,
-            memoryLevel: 'mtm',
-            emotion: entry.emotion || null,
-            sourceSessionId: sessionId,
-          },
-        });
-      }
-    } catch {}
-  }
-
-  async consolidateMemories(agentId: string) {
-    const results = { decayed: 0, archived: 0, promoted: 0 };
-
-    // 1. Decay MTM older than 7 days
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const oldMtms = await db.agentMemory.findMany({
-      where: { agentId, memoryLevel: 'mtm', isArchived: false, updatedAt: { lt: sevenDaysAgo } },
-    });
-
-    for (const mem of oldMtms) {
-      const newImp = mem.importance - 1;
-      if (newImp <= 0) {
-        await db.agentMemory.update({ where: { id: mem.id }, data: { isArchived: true, updatedAt: new Date() } });
-        results.archived++;
-      } else {
-        await db.agentMemory.update({ where: { id: mem.id }, data: { importance: newImp, updatedAt: new Date() } });
-        results.decayed++;
-      }
-    }
-
-    // 2. Promote MTM with refCount >= 3 to LTM
-    const promotable = await db.agentMemory.findMany({
-      where: { agentId, memoryLevel: 'mtm', isArchived: false, refCount: { gte: 3 } },
-    });
-
-    for (const mem of promotable) {
-      const ltmType = mem.type.replace(/^mtm_/, 'ltm_');
-      const existingLtm = await db.agentMemory.findFirst({
-        where: { agentId, key: mem.key, memoryLevel: 'ltm' },
-      });
-      if (!existingLtm) {
-        await db.agentMemory.update({
-          where: { id: mem.id },
-          data: { memoryLevel: 'ltm', type: ltmType, importance: Math.min(mem.importance + 1, 5), updatedAt: new Date() },
-        });
-        results.promoted++;
-      }
-    }
-
-    return results;
-  }
-
-  async importMemoriesFromMarkdown(agentId: string, markdown: string, sourceTitle?: string) {
-    const importPrompt = `Tu es un extracteur de mémoire à vie. Analyse ce document markdown et convertis-le en souvenirs persistants LTM (long terme) pour un agent IA.
-
-Document :
-"${markdown.slice(0, 4000)}"
-
-Instructions : extrais les informations factuelles, les valeurs, les croyances, les événements marquants, les relations, les compétences, les préférences durables.
-
-Retourne UNIQUEMENT un tableau JSON valide (ou [] si rien) :
-[{ "type": "ltm_identity"|"ltm_milestone"|"ltm_value"|"ltm_relationship", "key": "identifiant_court", "value": "description", "tags": ["tag1","tag2"], "importance": 1-5 }]`;
-
-    const result = await aiChat('Importe ces connaissances dans la mémoire permanente.', {
-      func: 'chat',
-      systemPrompt: importPrompt,
-    });
-
-    if (!result.success || !result.content) {
-      return { created: 0, error: 'LLM extraction failed' };
-    }
-
-    try {
-      const jsonStr = result.content.replace(/```json\s*|\s*```/g, '').trim();
-      const entries = JSON.parse(jsonStr);
-      if (!Array.isArray(entries)) return { created: 0, error: 'Invalid response format' };
-
-      let created = 0;
-      for (const entry of entries) {
-        if (!entry.type || !entry.key || !entry.value) continue;
-
-        const existing = await db.agentMemory.findFirst({
-          where: { agentId, key: entry.key, memoryLevel: 'ltm' },
-        });
-        if (!existing) {
-          await db.agentMemory.create({
-            data: {
-              id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-              agentId,
-              type: entry.type,
-              key: entry.key,
-              value: entry.value,
-              importance: entry.importance || 3,
-              memoryLevel: 'ltm',
-              tags: entry.tags ? JSON.stringify(entry.tags) : null,
-              sourceTitle: sourceTitle || 'Import .md',
-            },
-          });
-          created++;
-        }
-      }
-
-      return { created, error: null };
-    } catch {
-      return { created: 0, error: 'JSON parse failed' };
-    }
-  }
-
+  // ==================== AGENT CRUD ====================
   async getOrCreateAgent(params: {
     name: string;
     role: string;
@@ -759,8 +512,8 @@ Retourne UNIQUEMENT un tableau JSON valide (ou [] si rien) :
         isActive: a.isActive,
         capabilities: a.capabilities ? JSON.parse(a.capabilities) : [],
         createdAt: a.createdAt,
-        memoriesCount: 0,
         sessionsCount: 0,
+        memoriesCount: 0,
       };
     });
   }
@@ -804,113 +557,6 @@ Retourne UNIQUEMENT un tableau JSON valide (ou [] si rien) :
     }
     await db.agentSession.deleteMany({ where: { agentId } });
     await db.agent.delete({ where: { id: agentId } });
-    return { success: true };
-  }
-
-  async listSessions(agentId: string, limit = 10): Promise<SessionPreview[]> {
-    const sessions = await db.agentSession.findMany({
-      where: { agentId },
-      orderBy: { updatedAt: 'desc' },
-      take: limit,
-      include: {
-        AgentMessage: {
-          orderBy: { createdAt: 'asc' },
-          take: 1,
-        },
-      },
-    });
-
-    return sessions.map(s => ({
-      id: s.id,
-      title: s.title || 'Session sans titre',
-      messageCount: s.messageCount,
-      updatedAt: s.updatedAt,
-      preview: s.AgentMessage[0]?.content?.slice(0, 100) || '',
-    }));
-  }
-
-  async getSessionMessages(sessionId: string) {
-    return db.agentChatMessage.findMany({
-      where: { sessionId },
-      orderBy: { createdAt: 'asc' },
-    });
-  }
-
-  async getAgentStats(agentId: string) {
-    const [memories, sessions, messages] = await Promise.all([
-      db.agentMemory.count({ where: { agentId } }),
-      db.agentSession.count({ where: { agentId } }),
-      db.agentChatMessage.count({
-        where: {
-          sessionId: { in: (await db.agentSession.findMany({ where: { agentId }, select: { id: true } })).map(s => s.id) },
-        },
-      }),
-    ]);
-
-    return { memories, sessions, messages };
-  }
-
-  async getMemoriesCountByLevel(agentId: string) {
-    const [stm, mtm, ltm] = await Promise.all([
-      db.agentMemory.count({ where: { agentId, memoryLevel: 'stm' } }),
-      db.agentMemory.count({ where: { agentId, memoryLevel: 'mtm' } }),
-      db.agentMemory.count({ where: { agentId, memoryLevel: 'ltm' } }),
-    ]);
-    return { stm, mtm, ltm, total: stm + mtm + ltm };
-  }
-
-  async listMemories(agentId: string, level?: string) {
-    const where: any = { agentId };
-    if (level && ['stm', 'mtm', 'ltm'].includes(level)) {
-      where.memoryLevel = level;
-    }
-    return db.agentMemory.findMany({
-      where,
-      orderBy: [{ importance: 'desc' }, { updatedAt: 'desc' }],
-    });
-  }
-
-  async createMemory(agentId: string, data: {
-    key: string;
-    value: string;
-    type: string;
-    importance: number;
-    memoryLevel?: string;
-    emotion?: string;
-    tags?: string;
-  }) {
-    return db.agentMemory.create({
-      data: {
-        id: `mem-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        agentId,
-        key: data.key,
-        value: data.value,
-        type: data.type,
-        importance: data.importance,
-        memoryLevel: data.memoryLevel || 'ltm',
-        emotion: data.emotion || null,
-        tags: data.tags || null,
-      },
-    });
-  }
-
-  async updateMemory(memoryId: string, data: {
-    key?: string;
-    value?: string;
-    type?: string;
-    importance?: number;
-    memoryLevel?: string;
-    emotion?: string;
-    tags?: string;
-  }) {
-    return db.agentMemory.update({
-      where: { id: memoryId },
-      data,
-    });
-  }
-
-  async deleteMemory(memoryId: string) {
-    await db.agentMemory.delete({ where: { id: memoryId } });
     return { success: true };
   }
 }
