@@ -841,3 +841,56 @@ model AgentChatMessage {
 
   @@index([sessionId])
 }
+
+// ============================================
+// MODULE STORE — Registre de packages installables
+// ============================================
+
+/// Module store package registry
+model ModulePackage {
+  id          String   @id
+  name        String   @unique
+  version     String
+  description String?
+  author      String?
+  manifest    String   // JSON — full ModuleManifest
+  source      String?  // URL, "local", "marketplace"
+  checksum    String?  // SHA-256
+  isInstalled Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+
+  @@index([name])
+  @@index([isInstalled])
+}
+
+/// Audit log — every action recorded
+model AuditLog {
+  id        String   @id
+  timestamp DateTime @default(now())
+  moduleId  String
+  action    String   // "module.install", "sys.fs.read", etc.
+  result    String   // "success", "denied", "error"
+  details   String?  // JSON context
+  ipcId     String?  // Request ID
+
+  @@index([moduleId])
+  @@index([timestamp])
+  @@index([action])
+}
+
+/// Module tokens — API keys for module authentication
+model ModuleToken {
+  id          String    @id
+  moduleId    String
+  name        String
+  tokenHash   String    @unique
+  permissions String    // JSON array of PermissionString
+  expiresAt   DateTime?
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([moduleId])
+  @@index([tokenHash])
+}
