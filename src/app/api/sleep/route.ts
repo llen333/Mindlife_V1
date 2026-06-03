@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
     const limit = searchParams.get('limit');
 
     const where = { userId };
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { id, date, bedtime, wakeup, quality, notes, userId } = body;
-    const finalUserId = userId || 'user-admin';
+    const finalUserId = userId || 'mindlife-user';
 
     if (!bedtime || !wakeup || quality === undefined) {
       return NextResponse.json(
@@ -76,7 +76,7 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { id, date, bedtime, wakeup, quality, notes, userId } = body;
-    const finalUserId = userId || 'user-admin';
+    const finalUserId = userId || 'mindlife-user';
 
     if (!id) {
       return NextResponse.json(
@@ -130,7 +130,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
 
     if (!id) {
       return NextResponse.json(

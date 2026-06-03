@@ -1,0 +1,13 @@
+{
+  "name": "@mindlife/module-donnees",
+  "version": "1.0.0",
+  "description": "Mindlife Données Module - Notes, poids, sommeil, courses",
+  "private": true,
+  "main": "./index.ts",
+  "module": "./index.ts",
+  "types": "./index.ts",
+  "mindlife": {
+    "moduleId": "donnees",
+    "manifest": "./module.json"
+  }
+}

@@ -277,7 +277,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') || 'day';
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
     const startDate = searchParams.get('startDate');
     
     // If we have a start date, generate a week of meals

@@ -1,0 +1,13 @@
+{
+  "name": "@mindlife/module-sport",
+  "version": "1.0.0",
+  "description": "Mindlife Sport Module - Exercices, programmes, suivi sportif",
+  "private": true,
+  "main": "./index.ts",
+  "module": "./index.ts",
+  "types": "./index.ts",
+  "mindlife": {
+    "moduleId": "sport",
+    "manifest": "./module.json"
+  }
+}

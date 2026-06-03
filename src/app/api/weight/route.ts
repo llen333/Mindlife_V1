@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const limit = searchParams.get('limit');
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { weight, date, note, userId } = body;
-    const finalUserId = userId || 'user-admin';
+    const finalUserId = userId || 'mindlife-user';
 
     if (!weight) {
       return NextResponse.json(
@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { id, weight, date, note, userId } = body;
-    const finalUserId = userId || 'user-admin';
+    const finalUserId = userId || 'mindlife-user';
 
     if (!id) {
       return NextResponse.json(

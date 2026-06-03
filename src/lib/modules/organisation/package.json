@@ -1,0 +1,13 @@
+{
+  "name": "@mindlife/module-organisation",
+  "version": "1.0.0",
+  "description": "Mindlife Organisation Module - Tâches, événements, objectifs",
+  "private": true,
+  "main": "./index.ts",
+  "module": "./index.ts",
+  "types": "./index.ts",
+  "mindlife": {
+    "moduleId": "organisation",
+    "manifest": "./module.json"
+  }
+}

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get specific user with full profile
-    const targetUserId = userId || 'user-admin';
+    const targetUserId = userId || 'mindlife-user';
 
     // Utiliser une requête brute pour contourner le cache Prisma
     const rawUser = await db.$queryRaw`
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
       role: requestedRole,
     } = body;
 
-    const targetUserId = userId || 'user-admin';
+    const targetUserId = userId || 'mindlife-user';
 
     // Vérifier si c'est un nouveau user ou une mise à jour (requête brute pour le rôle)
     const existingUserRaw = await db.$queryRaw`

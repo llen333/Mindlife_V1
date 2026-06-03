@@ -3,5 +3,8 @@
   "name": "Nutrition",
   "version": "1.0.0",
   "description": "Recettes, repas, plans alimentaires et conseils nutrition",
-  "permissions": ["meals:read", "meals:write", "recipes:search"]
+  "author": "Mindlife Team",
+  "entry": "./index.ts",
+  "permissions": ["meals:read", "meals:write", "recipes:search"],
+  "dependencies": {}
 }

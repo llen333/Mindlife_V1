@@ -1,0 +1,13 @@
+{
+  "name": "@mindlife/module-nutrition",
+  "version": "1.0.0",
+  "description": "Mindlife Nutrition Module - Recettes, repas, plans alimentaires",
+  "private": true,
+  "main": "./index.ts",
+  "module": "./index.ts",
+  "types": "./index.ts",
+  "mindlife": {
+    "moduleId": "nutrition",
+    "manifest": "./module.json"
+  }
+}

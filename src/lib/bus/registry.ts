@@ -30,10 +30,30 @@ export class ModuleRegistry {
     return Object.keys(manifest.dependencies).filter((depId) => !this.manifests.has(depId));
   }
 
+  hasModule(moduleId: string): boolean {
+    return this.manifests.has(moduleId);
+  }
+
   async discover(): Promise<ModuleManifest[]> {
     const found: ModuleManifest[] = [];
-    const context = require?.context ? false : true;
-    if (context) return found;
+    try {
+      const { readdirSync, statSync } = await import('fs');
+      const { join } = await import('path');
+      const modulesDir = join(process.cwd(), 'src', 'lib', 'modules');
+      const entries = readdirSync(modulesDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+        try {
+          const manifestPath = join(modulesDir, entry.name, 'module.json');
+          const manifest: ModuleManifest = JSON.parse(
+            (await import('fs')).readFileSync(manifestPath, 'utf-8')
+          );
+          if (manifest.id) {
+            found.push(manifest);
+          }
+        } catch {}
+      }
+    } catch {}
     return found;
   }
 }

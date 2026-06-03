@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-// Récupère le userId depuis les params ou utilise 'user-admin' par défaut
 // Map short category IDs to DB category IDs
 function mapCategoryId(categoryId: string | undefined): string | undefined {
   if (!categoryId) return undefined;

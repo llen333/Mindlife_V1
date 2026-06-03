@@ -286,6 +286,31 @@ Retourne UNIQUEMENT un tableau JSON valide (ou [] si rien) :
     });
   }
 
+  async storeMemories(agentId: string, memories: Array<{
+    key: string;
+    value: string;
+    type: string;
+    importance: number;
+    memoryLevel?: string;
+    emotion?: string;
+    tags?: string;
+    metadata?: Record<string, unknown>;
+  }>) {
+    const results = [];
+    for (const mem of memories) {
+      results.push(await this.createMemory(agentId, {
+        key: mem.key,
+        value: mem.value,
+        type: mem.type,
+        importance: mem.importance,
+        memoryLevel: mem.memoryLevel,
+        emotion: mem.emotion,
+        tags: mem.tags,
+      }));
+    }
+    return results;
+  }
+
   async updateMemory(memoryId: string, data: {
     key?: string;
     value?: string;

@@ -1,0 +1,13 @@
+{
+  "name": "@mindlife/module-recherche",
+  "version": "1.0.0",
+  "description": "Mindlife Recherche Module - Recherche web et scraping",
+  "private": true,
+  "main": "./index.ts",
+  "module": "./index.ts",
+  "types": "./index.ts",
+  "mindlife": {
+    "moduleId": "recherche",
+    "manifest": "./module.json"
+  }
+}

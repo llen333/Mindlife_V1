@@ -59,4 +59,4 @@ server.log
 .github-config
 
 # Dev data backups (local development only)
-dev-data/
+dev-data/mindlife.db

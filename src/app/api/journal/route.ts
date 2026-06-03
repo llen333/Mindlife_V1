@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
     const mood = searchParams.get('mood');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { title, content, mood, gratitude, wins, challenges, userId } = body;
-    const finalUserId = userId || 'user-admin';
+    const finalUserId = userId || 'mindlife-user';
 
     if (!content) {
       return NextResponse.json(
@@ -87,7 +87,7 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { id, title, content, mood, gratitude, wins, challenges, userId } = body;
-    const finalUserId = userId || 'user-admin';
+    const finalUserId = userId || 'mindlife-user';
 
     if (!id) {
       return NextResponse.json(
@@ -125,7 +125,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
 
     if (!id) {
       return NextResponse.json(

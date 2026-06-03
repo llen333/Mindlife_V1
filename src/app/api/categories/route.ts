@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId } from '@/lib/api/get-user-id';
 
 // GET - List all categories for user
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
 
     const categories = await db.category.findMany({
       where: { userId },
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest) {
         icon: icon || 'Folder',
         color: color || '#6366f1',
         type: type || 'personal',
-        userId: userId || 'user-admin',
+        userId: userId || 'mindlife-user',
       },
     });
 
@@ -81,7 +82,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const category = await db.category.update({
-      where: { id, userId: userId || 'user-admin' },
+      where: { id, userId: userId || 'mindlife-user' },
       data: {
         name: name ?? undefined,
         icon: icon ?? undefined,
@@ -105,7 +106,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
 
     if (!id) {
       return NextResponse.json(

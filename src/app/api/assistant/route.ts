@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { aiChat } from '@/lib/ai-provider';
 
-const FALLBACK_USER_ID = 'user-admin';
+const FALLBACK_USER_ID = 'mindlife-user';
 
 // POST - Chat with AI assistant
 export async function POST(request: NextRequest) {

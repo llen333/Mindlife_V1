@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-
-// Helper pour récupérer le userId
-const getUserId = (searchParams: URLSearchParams, body?: any): string => {
-  return body?.userId || searchParams.get('userId') || 'mindlife-user';
-};
+import { getUserId } from '@/lib/api/get-user-id';
 
 // GET - List events with filters
 export async function GET(request: NextRequest) {

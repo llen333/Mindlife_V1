@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
-const FALLBACK_USER_ID = 'user-admin';
+const FALLBACK_USER_ID = 'mindlife-user';
 
 // GET - Get logs for date range
 export async function GET(request: NextRequest) {

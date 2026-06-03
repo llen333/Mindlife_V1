@@ -3,5 +3,8 @@
   "name": "Recherche Web",
   "version": "1.0.0",
   "description": "Recherche DuckDuckGo et scraping de pages web",
-  "permissions": ["web:search", "web:scrape"]
+  "author": "Mindlife Team",
+  "entry": "./index.ts",
+  "permissions": ["web:search", "web:scrape"],
+  "dependencies": {}
 }

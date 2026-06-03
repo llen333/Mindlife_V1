@@ -119,11 +119,27 @@ const INTENT_PATTERNS: IntentPattern[] = [
 
 function buildDynamicPatterns(): IntentPattern[] {
   const dynamic: IntentPattern[] = [];
+  const registryModules = registry.getInstalledModules();
+  const registryIds = new Set(registryModules.map(m => m.id));
+  
+  // Include bus modules not in registry (orphan modules)
+  for (const module of bus.getAllModules()) {
+    if (!registryIds.has(module.id) && module.getSkills) {
+      for (const skill of module.getSkills()) {
+        if (skill.triggers && skill.triggers.length > 0) {
+          const escaped = skill.triggers.map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+          dynamic.push({
+            moduleId: module.id,
+            intent: skill.id,
+            patterns: [new RegExp(escaped.join('|'), 'i')],
+          });
+        }
+      }
+    }
+  }
   
   // Use registry for dynamic discovery of installed modules
-  const installedModules = registry.getInstalledModules();
-  
-  for (const manifest of installedModules) {
+  for (const manifest of registryModules) {
     const module = bus.getModule(manifest.id);
     if (module && module.getSkills) {
       for (const skill of module.getSkills()) {

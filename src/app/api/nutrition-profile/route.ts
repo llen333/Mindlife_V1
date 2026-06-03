@@ -5,7 +5,7 @@ import { db } from '@/lib/db';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
     
     // Try to get existing profile from database
     const profile = await db.nutritionProfile.findUnique({
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
-    const userId = body.userId || 'user-admin';
+    const userId = body.userId || 'mindlife-user';
     
     const {
       weight,
@@ -126,7 +126,7 @@ export async function PUT(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const userId = body.userId || 'user-admin';
+    const userId = body.userId || 'mindlife-user';
     
     const {
       weight,

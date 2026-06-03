@@ -27,6 +27,10 @@ export class Orchestrator {
     return true;
   }
 
+  clearAll(): void {
+    this.modules.clear();
+  }
+
   getEventBus(): EventBus {
     return eventBus;
   }

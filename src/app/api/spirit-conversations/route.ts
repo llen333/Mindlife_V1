@@ -11,7 +11,7 @@ import { getServerSession } from 'next-auth';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
     const conversationId = searchParams.get('conversationId');
     const archetype = searchParams.get('archetype');
     const limit = parseInt(searchParams.get('limit') || '100');
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Archetype is required' }, { status: 400 });
     }
 
-    const targetUserId = userId || 'user-admin';
+    const targetUserId = userId || 'mindlife-user';
     const conversationId = `spirit-${targetUserId}-${Date.now()}`;
 
     // Create conversation with messages
@@ -138,7 +138,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'ConversationId and message are required' }, { status: 400 });
     }
 
-    const targetUserId = userId || 'user-admin';
+    const targetUserId = userId || 'mindlife-user';
 
     // Verify ownership
     const conversation = await db.spiritConversation.findFirst({
@@ -177,7 +177,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const userId = searchParams.get('userId') || 'user-admin';
+    const userId = searchParams.get('userId') || 'mindlife-user';
 
     if (!id) {
       return NextResponse.json({ error: 'Conversation ID is required' }, { status: 400 });

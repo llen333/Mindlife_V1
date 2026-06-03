@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getUserId } from '@/lib/api/get-user-id';
 
-// Récupère le userId depuis les params ou utilise 'user-admin' par défaut
-function getUserId(searchParams: URLSearchParams, body?: Record<string, unknown>): string {
-  return (body?.userId as string) || searchParams.get('userId') || 'mindlife-user';
-}
-
-// Parser les milestones
 function parseMilestones(milestones: unknown): string | undefined {
   if (!milestones) return undefined;
   if (typeof milestones === 'string') return milestones;
   return JSON.stringify(milestones);
 }
 
-// Définition des catégories d'objectifs - Aligné avec le seed
 const DEFAULT_GOAL_CATEGORIES = [
   { id: 'cat-personal', name: 'Développement Personnel', icon: '🧠', color: 'purple', type: 'goal' },
   { id: 'cat-professional', name: 'Vie Professionnelle', icon: '💼', color: 'slate', type: 'goal' },

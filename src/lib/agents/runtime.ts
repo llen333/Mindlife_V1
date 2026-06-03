@@ -116,18 +116,19 @@ export class AgentRuntime {
     this.context.messageCount++;
     this.context.currentSessionId = sessionId;
 
-    const sqliteMemories = await memoryManager.listMemories(this.config.id);
+    const structuredMemories = await memoryManager.listMemories(this.config.id);
     let vectorMemories: any[] = [];
 
     try {
       const { searchMemories } = await import('@/lib/rag/store');
-      vectorMemories = await searchMemories(this.config.id, message, 3, 0.65);
+      const result = await searchMemories(this.config.id, message, 3, 0.65);
+      vectorMemories = Array.isArray(result) ? result : [];
     } catch {}
 
     const contextBlocks = [];
-    if (sqliteMemories.length > 0) {
+    if (structuredMemories.length > 0) {
       contextBlocks.push('[Mémoire structurée]');
-      contextBlocks.push(...sqliteMemories.slice(0, 3).map(m => `[${m.type}] ${m.key}: ${m.value}`));
+      contextBlocks.push(...structuredMemories.slice(0, 3).map(m => `[${m.type}] ${m.key}: ${m.value}`));
     }
     if (vectorMemories.length > 0) {
       contextBlocks.push('\n[Mémoire sémantique]');

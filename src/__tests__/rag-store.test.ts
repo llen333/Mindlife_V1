@@ -14,7 +14,12 @@ describe
     let store: typeof import('@/lib/rag/store');
 
     beforeAll(async () => {
+      const embeddings = await import('@/lib/rag/embeddings');
+      embeddings.useMockEmbeddings();
       store = await import('@/lib/rag/store');
+      // Clean up any leftover data from previous test runs
+      try { await store.deleteMemories('test-agent'); } catch {}
+      try { await store.deleteMemories('test-agent-batch'); } catch {}
     });
 
     it('stores and retrieves a memory', async () => {
