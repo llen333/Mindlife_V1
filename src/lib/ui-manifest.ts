@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Calendar, CheckSquare, Target, Briefcase,
   Apple, ChefHat, Brain, BookOpen, TrendingUp, Heart, Dumbbell, Sparkles,
-  Cpu, Package, Moon, Settings,
+  Cpu, Package, Moon, Settings, Activity,
 } from 'lucide-react';
 import { registerPanel } from './ui-registry';
 import MindLifeDashboard from '@/components/dashboard/MindLifeDashboard';
@@ -19,6 +19,7 @@ import KernelDashboard from '@/components/kernel/KernelDashboard';
 import ModuleStorePage from '@/components/kernel/ModuleStore';
 import SleepPage from '@/components/SleepPage';
 import SettingsPage from '@/components/SettingsPage';
+import DiagnosticPage from '@/components/diagnostic/DiagnosticPage';
 
 registerPanel({ id: 'kernel', label: 'Kernel', icon: Cpu, component: KernelDashboard, section: 'KERNEL' });
 registerPanel({ id: 'store', label: 'Module Store', icon: Package, component: ModuleStorePage, section: 'KERNEL' });
@@ -37,3 +38,4 @@ registerPanel({ id: 'sport', label: 'Sport', icon: Dumbbell, component: SportPag
 registerPanel({ id: 'ai-synthesis', label: 'Synthèse AI', icon: Sparkles, component: PlaceholderPage, section: 'SPORT ET SANTÉ', placeholder: true });
 registerPanel({ id: 'sleep', label: 'Sommeil', icon: Moon, component: SleepPage, section: 'AUTRE' });
 registerPanel({ id: 'settings', label: 'Paramètres', icon: Settings, component: SettingsPage, section: 'AUTRE' });
+registerPanel({ id: 'diagnostic', label: 'Diagnostic', icon: Activity, component: DiagnosticPage, section: 'KERNEL' });
