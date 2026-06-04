@@ -43,6 +43,10 @@ export type IpcMethod =
   | 'security.permission.restore'
   | 'security.audit.query'
   | 'security.audit.recent'
+  | 'sys.mem.promote'
+  | 'memory.consolidate'
+  | 'memory.status'
+  | 'memory.config'
   | 'kernel.ping'
   | 'kernel.status';
 

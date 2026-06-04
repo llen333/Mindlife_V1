@@ -13,7 +13,9 @@ import { deadLetterQueue } from './runtime/queue';
 import { moduleTokenManager } from './security/tokens';
 import { auditLogger } from './security/audit';
 import { permissionManager } from './security/permissions';
+import { memoryConsolidator } from './memory/consolidation';
 import type { IpcMethod, KernelStatus } from './ipc/types';
+import type { ConsolidationConfig } from './memory/types';
 import type { MessageContext } from '../src/lib/bus/types';
 
 const startTime = Date.now();
@@ -126,6 +128,10 @@ function registerHandlers(): void {
     {
       method: 'sys.mem.count',
       handler: async (req) => sysMem.count(req.params as any),
+    },
+    {
+      method: 'sys.mem.promote',
+      handler: async (req) => sysMem.promote(req.params as any),
     },
     {
       method: 'sys.agent.send',
@@ -271,6 +277,26 @@ function registerHandlers(): void {
       method: 'security.audit.recent',
       handler: async (req) => auditLogger.recent(req.params.limit as number),
     },
+
+    // === Memory Consolidation Service ===
+    {
+      method: 'memory.consolidate',
+      handler: async () => memoryConsolidator.consolidate(),
+    },
+    {
+      method: 'memory.status',
+      handler: async () => memoryConsolidator.getStatus(),
+    },
+    {
+      method: 'memory.config',
+      handler: async (req) => {
+        const params = req.params as Partial<ConsolidationConfig>;
+        if (Object.keys(params).length > 0) {
+          memoryConsolidator.updateConfig(params);
+        }
+        return memoryConsolidator.getConfig();
+      },
+    },
   ];
 
   for (const { method, handler } of handlers) {
@@ -306,16 +332,21 @@ async function main(): Promise<void> {
   const port = await server.start();
   console.log(`[KERNEL] IPC server listening on ws://127.0.0.1:${port}`);
 
+  memoryConsolidator.start();
+  console.log(`[KERNEL] Memory consolidation active (interval: ${memoryConsolidator.getConfig().cycleIntervalMs}ms)`);
+
   await loadModules();
 
   process.on('SIGINT', async () => {
     console.log('\n[KERNEL] Shutting down...');
+    memoryConsolidator.stop();
     await kernelStore.clearAllModuleStates();
     server.stop();
     process.exit(0);
   });
 
   process.on('SIGTERM', () => {
+    memoryConsolidator.stop();
     server.stop();
     process.exit(0);
   });
