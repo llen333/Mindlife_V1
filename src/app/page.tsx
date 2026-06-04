@@ -20,6 +20,8 @@ import PlaceholderPage from '@/components/PlaceholderPage';
 import SpiritPage from '@/components/SpiritPage';
 import ManagementPage from '@/components/management/ManagementPage';
 import GrowthPage from '@/components/growth/GrowthPage';
+import KernelDashboard from '@/components/kernel/KernelDashboard';
+import ModuleStorePage from '@/components/kernel/ModuleStore';
 import { useStore } from '@/lib/stores';
 import { useUsers, useUserProfile } from '@/lib/hooks';
 
@@ -47,6 +49,10 @@ const panelComponents: Record<string, React.ComponentType> = {
   sport: SportPage,
   'ai-synthesis': PlaceholderPage,
   
+  // Kernel
+  kernel: KernelDashboard,
+  store: ModuleStorePage,
+
   // Other
   sleep: SleepPage,
   settings: SettingsPage,

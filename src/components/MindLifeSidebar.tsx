@@ -18,14 +18,24 @@ import {
   Sparkles,
   Settings,
   ChevronDown,
+  Cpu,
+  Package,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   useNavigation, useNavigationActions, useUserProfile,
   useGlobalActions, useStore
 } from '@/lib/store/selectors';
+import KernelStatus from '@/components/kernel/KernelStatus';
 
 const menuSections = [
+  {
+    title: 'KERNEL',
+    items: [
+      { id: 'kernel', label: 'Kernel', icon: Cpu },
+      { id: 'store', label: 'Module Store', icon: Package },
+    ],
+  },
   {
     title: 'PRINCIPAL',
     items: [
@@ -74,6 +84,7 @@ const MindLifeSidebar = memo(function MindLifeSidebar() {
   const userProfile = useUserProfile();
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>([
+    'KERNEL',
     'PRINCIPAL',
     'LOGISTIQUE',
     'ALIMENTATION',
@@ -281,6 +292,9 @@ const MindLifeSidebar = memo(function MindLifeSidebar() {
           </button>
         </div>
       )}
+
+      {/* Kernel Status */}
+      <KernelStatus />
 
       {/* Settings */}
       <div className="px-4 py-2 border-t border-white/5">
