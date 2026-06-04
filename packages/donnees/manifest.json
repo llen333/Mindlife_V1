@@ -1,0 +1,28 @@
+{
+  "id": "donnees",
+  "name": "Données & Logs",
+  "version": "1.0.0",
+  "description": "Notes, poids, sommeil, courses et données personnelles",
+  "author": "Mindlife Team",
+  "entry": "./index.ts",
+  "permissions": [
+    "data:read",
+    "data:write",
+    "notes:read",
+    "notes:write"
+  ],
+  "dependencies": {},
+  "intents": [
+    "data_save",
+    "data_query",
+    "data_export",
+    "log_entry"
+  ],
+  "timeout": 5000,
+  "rateLimit": {
+    "maxRequests": 200,
+    "windowMs": 60000
+  },
+  "allowNetwork": false,
+  "maxMemoryMb": 64
+}

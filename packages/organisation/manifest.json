@@ -1,0 +1,28 @@
+{
+  "id": "organisation",
+  "name": "Organisation",
+  "version": "1.0.0",
+  "description": "Tâches, événements, objectifs et routines quotidiennes",
+  "author": "Mindlife Team",
+  "entry": "./index.ts",
+  "permissions": [
+    "tasks:read",
+    "tasks:write",
+    "events:read",
+    "events:write"
+  ],
+  "dependencies": {},
+  "intents": [
+    "task_create",
+    "task_list",
+    "event_plan",
+    "goal_track"
+  ],
+  "timeout": 5000,
+  "rateLimit": {
+    "maxRequests": 120,
+    "windowMs": 60000
+  },
+  "allowNetwork": false,
+  "maxMemoryMb": 32
+}

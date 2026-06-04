@@ -1,0 +1,28 @@
+{
+  "id": "recherche",
+  "name": "Recherche Web",
+  "version": "1.0.0",
+  "description": "Recherche DuckDuckGo et scraping de pages web",
+  "author": "Mindlife Team",
+  "entry": "./index.ts",
+  "permissions": [
+    "web:search",
+    "web:scrape"
+  ],
+  "dependencies": {},
+  "intents": [
+    "web_search",
+    "scrape_url",
+    "news_fetch"
+  ],
+  "timeout": 20000,
+  "rateLimit": {
+    "maxRequests": 20,
+    "windowMs": 60000
+  },
+  "allowedPaths": [
+    "/tmp"
+  ],
+  "allowNetwork": true,
+  "maxMemoryMb": 256
+}

@@ -1,0 +1,27 @@
+{
+  "id": "sport",
+  "name": "Sport",
+  "version": "1.0.0",
+  "description": "Exercices, programmes d'entraînement et suivi sportif",
+  "author": "Mindlife Team",
+  "entry": "./index.ts",
+  "permissions": [
+    "workouts:read",
+    "workouts:write",
+    "exercises:search"
+  ],
+  "dependencies": {},
+  "intents": [
+    "workout_log",
+    "workout_plan",
+    "biometrics_track",
+    "exercise_search"
+  ],
+  "timeout": 10000,
+  "rateLimit": {
+    "maxRequests": 30,
+    "windowMs": 60000
+  },
+  "allowNetwork": false,
+  "maxMemoryMb": 64
+}

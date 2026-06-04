@@ -1,0 +1,30 @@
+{
+  "id": "nutrition",
+  "name": "Nutrition",
+  "version": "1.0.0",
+  "description": "Recettes, repas, plans alimentaires et conseils nutrition",
+  "author": "Mindlife Team",
+  "entry": "./index.ts",
+  "permissions": [
+    "meals:read",
+    "meals:write",
+    "recipes:search"
+  ],
+  "dependencies": {},
+  "intents": [
+    "recipe_search",
+    "meal_log",
+    "meal_plan",
+    "nutrition_advice"
+  ],
+  "timeout": 15000,
+  "rateLimit": {
+    "maxRequests": 60,
+    "windowMs": 60000
+  },
+  "allowedPaths": [
+    "/tmp"
+  ],
+  "allowNetwork": true,
+  "maxMemoryMb": 128
+}
