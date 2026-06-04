@@ -214,6 +214,99 @@ describe('Point 4 — Runtime Isolation', () => {
     });
   });
 
+  describe('ModuleSandbox — Hardened', () => {
+    const mockFast = {
+      id: 'test-hardened-module',
+      name: 'Test Hardened',
+      getTools: () => [],
+      getSkills: () => [],
+      process: async () => ({ success: true, content: 'ok', moduleId: 'test-hardened-module' }),
+    };
+
+    afterAll(() => {
+      moduleSandbox.unban('test-hardened-module');
+      moduleSandbox.unban('test-banned-module');
+    });
+
+    it('should ban and unban modules', () => {
+      moduleSandbox.ban('test-banned-module');
+      expect(moduleSandbox.isBanned('test-banned-module')).toBe(true);
+      moduleSandbox.unban('test-banned-module');
+      expect(moduleSandbox.isBanned('test-banned-module')).toBe(false);
+    });
+
+    it('should block banned modules from executing', async () => {
+      moduleSandbox.ban('test-banned-module');
+      const result = await moduleSandbox.execute(
+        { ...mockFast, id: 'test-banned-module' } as any,
+        { sender: 'user', text: 'test', intent: 'test' },
+        async () => ({ success: true, content: 'done', moduleId: 'test-banned-module' }),
+      );
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('banned');
+      moduleSandbox.unban('test-banned-module');
+    });
+
+    it('should check paths against allowed paths', () => {
+      moduleSandbox.configure('test-path-module', { allowedPaths: ['/tmp/allowed'] });
+      const ok = moduleSandbox.checkPath('test-path-module', '/tmp/allowed/subdir/file.txt');
+      expect(ok.allowed).toBe(true);
+      const denied = moduleSandbox.checkPath('test-path-module', '/etc/passwd');
+      expect(denied.allowed).toBe(false);
+    });
+
+    it('should allow any path when no allowedPaths configured', () => {
+      moduleSandbox.configure('test-nopath-module', {});
+      const ok = moduleSandbox.checkPath('test-nopath-module', '/etc/passwd');
+      expect(ok.allowed).toBe(true);
+    });
+
+    it('should block network requests when allowNetwork is false', async () => {
+      moduleSandbox.configure('test-nonet-module', { allowNetwork: false });
+      const result = await moduleSandbox.execute(
+        { ...mockFast, id: 'test-nonet-module' } as any,
+        { sender: 'user', text: 'test', intent: 'network' },
+        async () => ({ success: true, content: 'data', moduleId: 'test-nonet-module' }),
+      );
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('network access disabled');
+    });
+
+    it('should enforce execution budget', async () => {
+      moduleSandbox.configure('test-budget-module', { executionBudget: 10, executionWindowMs: 60000 });
+      const ok = await moduleSandbox.execute(
+        { ...mockFast, id: 'test-budget-module' } as any,
+        { sender: 'user', text: 'test', intent: 'test' },
+        async () => {
+          await new Promise((r) => setTimeout(r, 5));
+          return { success: true, content: 'ok', moduleId: 'test-budget-module' };
+        },
+      );
+      expect(ok.success).toBe(true);
+    });
+
+    it('should return status with memory and budget info', () => {
+      moduleSandbox.configure('test-status-module', { timeout: 5000, maxMemoryMb: 256 });
+      const status = moduleSandbox.getStatus('test-status-module');
+      expect(status).not.toBeNull();
+      expect(status!.moduleId).toBe('test-status-module');
+      expect(status!.options.maxMemoryMb).toBe(256);
+      expect(status!.memory).toBeDefined();
+      expect(status!.executionBudget).toBeDefined();
+    });
+
+    it('should return null status for unknown module', () => {
+      const status = moduleSandbox.getStatus('nonexistent-module');
+      expect(status).toBeNull();
+    });
+
+    it('should list all configured module statuses', () => {
+      const all = moduleSandbox.getAllStatus();
+      expect(all.length).toBeGreaterThanOrEqual(3);
+      expect(all.some((s) => s.moduleId === 'test-status-module')).toBe(true);
+    });
+  });
+
   describe('DeadLetterQueue', () => {
     it('should enqueue a dead letter', async () => {
       const id = await deadLetterQueue.enqueue({

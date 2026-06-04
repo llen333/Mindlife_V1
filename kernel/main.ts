@@ -213,7 +213,19 @@ function registerHandlers(): void {
     },
     {
       method: 'runtime.sandbox.status',
-      handler: async (req) => moduleSandbox.getOptions(req.params.moduleId as string),
+      handler: async (req) => moduleSandbox.getStatus(req.params.moduleId as string),
+    },
+    {
+      method: 'runtime.sandbox.statusAll',
+      handler: async () => moduleSandbox.getAllStatus(),
+    },
+    {
+      method: 'runtime.sandbox.ban',
+      handler: async (req) => { moduleSandbox.ban(req.params.moduleId as string); return { banned: true }; },
+    },
+    {
+      method: 'runtime.sandbox.unban',
+      handler: async (req) => { moduleSandbox.unban(req.params.moduleId as string); return { unbanned: true }; },
     },
     {
       method: 'runtime.ratelimit.status',
@@ -335,11 +347,15 @@ async function main(): Promise<void> {
   memoryConsolidator.start();
   console.log(`[KERNEL] Memory consolidation active (interval: ${memoryConsolidator.getConfig().cycleIntervalMs}ms)`);
 
+  moduleSandbox.startMemorySampling();
+  console.log('[KERNEL] Sandbox memory monitoring active');
+
   await loadModules();
 
   process.on('SIGINT', async () => {
     console.log('\n[KERNEL] Shutting down...');
     memoryConsolidator.stop();
+    moduleSandbox.stopMemorySampling();
     await kernelStore.clearAllModuleStates();
     server.stop();
     process.exit(0);
@@ -347,6 +363,7 @@ async function main(): Promise<void> {
 
   process.on('SIGTERM', () => {
     memoryConsolidator.stop();
+    moduleSandbox.stopMemorySampling();
     server.stop();
     process.exit(0);
   });

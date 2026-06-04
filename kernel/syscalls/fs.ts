@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, readdirSync, existsSync, statSync, mkdirSync } from 'fs';
 import { join, resolve, normalize } from 'path';
+import { moduleSandbox } from '../runtime/sandbox';
 
 const ALLOWED_ROOTS = [
   resolve(process.cwd(), 'data'),
@@ -9,8 +10,12 @@ const ALLOWED_ROOTS = [
 
 const ALLOWED_EXTENSIONS = ['.md', '.txt', '.json', '.csv', '.log', '.yaml', '.yml', '.env', '.ts', '.js'];
 
-function isPathAllowed(target: string): { allowed: boolean; resolvedPath: string; reason?: string } {
+function isPathAllowed(target: string, moduleId?: string): { allowed: boolean; resolvedPath: string; reason?: string } {
   const resolved = resolve(normalize(target));
+  if (moduleId) {
+    const modCheck = moduleSandbox.checkPath(moduleId, resolved);
+    if (!modCheck.allowed) return { allowed: false, resolvedPath: resolved, reason: modCheck.reason };
+  }
   const allowed = ALLOWED_ROOTS.some((root) => resolved.startsWith(root));
   if (!allowed) return { allowed: false, resolvedPath: resolved, reason: 'Path outside allowed roots' };
   const ext = resolved.substring(resolved.lastIndexOf('.'));
@@ -21,35 +26,35 @@ function isPathAllowed(target: string): { allowed: boolean; resolvedPath: string
 }
 
 export const sysFs = {
-  async read(path: string): Promise<string> {
-    const { allowed, resolvedPath, reason } = isPathAllowed(path);
+  async read(path: string, moduleId?: string): Promise<string> {
+    const { allowed, resolvedPath, reason } = isPathAllowed(path, moduleId);
     if (!allowed) throw new Error(`sys.fs.read denied: ${reason}`);
     return readFileSync(resolvedPath, 'utf-8');
   },
 
-  async write(path: string, content: string): Promise<void> {
-    const { allowed, resolvedPath, reason } = isPathAllowed(path);
+  async write(path: string, content: string, moduleId?: string): Promise<void> {
+    const { allowed, resolvedPath, reason } = isPathAllowed(path, moduleId);
     if (!allowed) throw new Error(`sys.fs.write denied: ${reason}`);
     const dir = resolvedPath.substring(0, resolvedPath.lastIndexOf('/'));
     if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
     writeFileSync(resolvedPath, content, 'utf-8');
   },
 
-  async list(dir: string): Promise<string[]> {
-    const { allowed, resolvedPath, reason } = isPathAllowed(dir);
+  async list(dir: string, moduleId?: string): Promise<string[]> {
+    const { allowed, resolvedPath, reason } = isPathAllowed(dir, moduleId);
     if (!allowed) throw new Error(`sys.fs.list denied: ${reason}`);
     if (!existsSync(resolvedPath)) return [];
     return readdirSync(resolvedPath);
   },
 
-  async exists(path: string): Promise<boolean> {
-    const { allowed, resolvedPath, reason } = isPathAllowed(path);
+  async exists(path: string, moduleId?: string): Promise<boolean> {
+    const { allowed, resolvedPath } = isPathAllowed(path, moduleId);
     if (!allowed) return false;
     return existsSync(resolvedPath);
   },
 
-  async info(path: string): Promise<{ exists: boolean; size: number; isDirectory: boolean }> {
-    const { allowed, resolvedPath } = isPathAllowed(path);
+  async info(path: string, moduleId?: string): Promise<{ exists: boolean; size: number; isDirectory: boolean }> {
+    const { allowed, resolvedPath } = isPathAllowed(path, moduleId);
     if (!allowed || !existsSync(resolvedPath)) {
       return { exists: false, size: 0, isDirectory: false };
     }
