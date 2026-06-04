@@ -12,6 +12,15 @@ export interface TokenInfo {
   createdAt: Date;
 }
 
+function getHmacKey(): string {
+  return process.env.TOKEN_ENCRYPTION_KEY || 'mindlife-default-key-change-in-production';
+}
+
+function hash(token: string): string {
+  const key = getHmacKey();
+  return crypto.createHmac('sha256', key).update(token).digest('hex');
+}
+
 export class ModuleTokenManager {
   async generate(params: {
     moduleId: string;
@@ -20,14 +29,14 @@ export class ModuleTokenManager {
     expiresInDays?: number;
   }): Promise<{ token: string; info: TokenInfo }> {
     const raw = `mrt_${crypto.randomBytes(32).toString('base64url')}`;
-    const hash = this.hash(raw);
+    const tokenHash = hash(raw);
 
     const record = await db.moduleToken.create({
       data: {
         id: `tok-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`,
         moduleId: params.moduleId,
         name: params.name,
-        tokenHash: hash,
+        tokenHash,
         permissions: JSON.stringify(params.permissions),
         expiresAt: params.expiresInDays
           ? new Date(Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000)
@@ -41,13 +50,16 @@ export class ModuleTokenManager {
     };
   }
 
-  async validate(token: string): Promise<TokenInfo | null> {
-    const hash = this.hash(token);
-    const record = await db.moduleToken.findUnique({ where: { tokenHash: hash } });
+  async validate(token: string, ip?: string): Promise<TokenInfo | null> {
+    const tokenHash = hash(token);
+    const record = await db.moduleToken.findUnique({ where: { tokenHash } });
 
     if (!record) return null;
     if (!record.isActive) return null;
-    if (record.expiresAt && record.expiresAt < new Date()) return null;
+
+    if (record.expiresAt && record.expiresAt < new Date()) {
+      return null;
+    }
 
     await db.moduleToken.update({
       where: { id: record.id },
@@ -77,10 +89,6 @@ export class ModuleTokenManager {
     const info = await this.validate(token);
     if (!info) return false;
     return info.permissions.includes('*') || info.permissions.includes(requiredPermission);
-  }
-
-  private hash(token: string): string {
-    return crypto.createHash('sha256').update(token).digest('hex');
   }
 
   private toTokenInfo(r: any): TokenInfo {

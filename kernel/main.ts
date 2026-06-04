@@ -14,6 +14,8 @@ import { deadLetterQueue } from './runtime/queue';
 import { moduleTokenManager } from './security/tokens';
 import { auditLogger } from './security/audit';
 import { permissionManager } from './security/permissions';
+import { ipLimiter } from './security/ip-limiter';
+import { securityMonitor } from './security/monitor';
 import { memoryConsolidator } from './memory/consolidation';
 import type { IpcMethod, KernelStatus } from './ipc/types';
 import type { ConsolidationConfig } from './memory/types';
@@ -314,6 +316,41 @@ function registerHandlers(): void {
       method: 'security.audit.recent',
       handler: async (req) => auditLogger.recent(req.params.limit as number),
     },
+    {
+      method: 'security.ipLimiter.check',
+      handler: async (req) => ipLimiter.check(req.params.ip as string),
+    },
+    {
+      method: 'security.ipLimiter.config',
+      handler: async (req) => {
+        ipLimiter.configure(req.params.maxRequests as number, req.params.windowMs as number);
+        return ipLimiter.getStats();
+      },
+    },
+    {
+      method: 'security.ipLimiter.stats',
+      handler: async () => ipLimiter.getStats(),
+    },
+    {
+      method: 'security.monitor.start',
+      handler: async () => { securityMonitor.start(); return { started: true }; },
+    },
+    {
+      method: 'security.monitor.stop',
+      handler: async () => { securityMonitor.stop(); return { stopped: true }; },
+    },
+    {
+      method: 'security.monitor.alerts',
+      handler: async (req) => securityMonitor.getAlerts(req.params.limit as number),
+    },
+    {
+      method: 'security.monitor.config',
+      handler: async (req) => {
+        const params = req.params as any;
+        if (Object.keys(params).length > 0) securityMonitor.updateConfig(params);
+        return securityMonitor.getConfig();
+      },
+    },
 
     // === Memory Consolidation Service ===
     {
@@ -375,12 +412,16 @@ async function main(): Promise<void> {
   moduleSandbox.startMemorySampling();
   console.log('[KERNEL] Sandbox memory monitoring active');
 
+  securityMonitor.start();
+  console.log('[KERNEL] Security monitor active');
+
   await loadModules();
 
   process.on('SIGINT', async () => {
     console.log('\n[KERNEL] Shutting down...');
     memoryConsolidator.stop();
     moduleSandbox.stopMemorySampling();
+    securityMonitor.stop();
     await kernelStore.clearAllModuleStates();
     server.stop();
     process.exit(0);
