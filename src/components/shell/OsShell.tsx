@@ -3,41 +3,20 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/lib/stores';
 import { useUsers, useUserProfile } from '@/lib/hooks';
+import { getPanel } from '@/lib/ui-registry';
+import '@/lib/ui-manifest';
 import OsSidebar from './OsSidebar';
 import OsTopBar from './OsTopBar';
 import OsContent from './OsContent';
 import AssistantChat from '@/components/AssistantChat';
 
-const panelTitles: Record<string, string> = {
-  dashboard: 'Tableau de Bord',
-  calendar: 'Calendrier',
-  tasks: 'Tâches',
-  goals: 'Objectifs',
-  management: 'Gestion',
-  'hub-alimentaire': 'Hub Alimentaire',
-  nutrition: 'Alimentation',
-  mind: 'Esprit',
-  culture: 'Culture',
-  growth: 'Croissance',
-  health: 'Santé',
-  sport: 'Sport',
-  'ai-synthesis': 'Synthèse AI',
-  kernel: 'Kernel',
-  store: 'Module Store',
-  sleep: 'Sommeil',
-  settings: 'Paramètres',
-};
-
 export default function OsShell() {
   const { activePanel, users: zustandUsers, setUsers, dataLoaded, loadAllData } = useStore();
   const { data: users = [] } = useUsers();
   useUserProfile();
-  const lastLoadedUserId = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!dataLoaded) {
-      loadAllData();
-    }
+    if (!dataLoaded) loadAllData();
   }, [dataLoaded, loadAllData]);
 
   useEffect(() => {
@@ -50,6 +29,10 @@ export default function OsShell() {
     }
   }, [users, zustandUsers, setUsers]);
 
+  const panel = getPanel(activePanel);
+  const title = panel?.label || 'Mindlife';
+  const Icon = panel?.icon;
+
   const noSidebarPages = ['mind', 'sport'];
   const showSidebar = !noSidebarPages.includes(activePanel);
 
@@ -58,7 +41,7 @@ export default function OsShell() {
       {showSidebar && <OsSidebar />}
 
       <div className={showSidebar ? 'pl-[70px]' : ''}>
-        <OsTopBar title={panelTitles[activePanel] || 'Mindlife'} />
+        <OsTopBar title={title} icon={Icon} />
         <main className="p-6">
           <OsContent activePanel={activePanel} />
         </main>
