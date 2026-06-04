@@ -7,6 +7,7 @@ import { sysFs } from './syscalls/fs';
 import { sysMem } from './syscalls/mem';
 import { sysAgent } from './syscalls/agent';
 import { moduleStore } from './store/manager';
+import { remoteStore } from './store/remote';
 import { moduleSandbox } from './runtime/sandbox';
 import { rateLimiter } from './runtime/ratelimit';
 import { deadLetterQueue } from './runtime/queue';
@@ -201,6 +202,30 @@ function registerHandlers(): void {
     {
       method: 'store.remove',
       handler: async (req) => moduleStore.remove(req.params.name as string),
+    },
+    {
+      method: 'store.remote.search',
+      handler: async (req) => remoteStore.search(req.params.query as string),
+    },
+    {
+      method: 'store.remote.info',
+      handler: async (req) => remoteStore.getInfo(req.params.name as string),
+    },
+    {
+      method: 'store.remote.install',
+      handler: async (req) => remoteStore.install(req.params.name as string, req.params.version as string | undefined),
+    },
+    {
+      method: 'store.remote.uninstall',
+      handler: async (req) => remoteStore.uninstall(req.params.name as string),
+    },
+    {
+      method: 'store.remote.listInstalled',
+      handler: async () => remoteStore.listInstalled(),
+    },
+    {
+      method: 'store.remote.setRegistry',
+      handler: async (req) => { remoteStore.setRegistry(req.params.url as string); return { registry: remoteStore.getRegistry() }; },
     },
 
     // === POINT 4 — Runtime Isolation ===

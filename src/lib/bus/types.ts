@@ -48,6 +48,12 @@ export interface ModuleManifest {
   author?: string;
   dependencies?: Record<string, string>;
   permissions?: string[];
+  intents?: string[];
+  timeout?: number;
+  rateLimit?: { maxRequests: number; windowMs: number };
+  allowedPaths?: string[];
+  allowNetwork?: boolean;
+  maxMemoryMb?: number;
 }
 
 export interface ModuleEventMap {
