@@ -1,125 +1,190 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { IpcServer } from '../../kernel/ipc/server';
-import type { IpcMethod } from '../../kernel/ipc/types';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { KernelIPC } from '@/lib/kernel/ipc';
+import type { KernelRequest } from '@/lib/kernel/types';
 
-describe('Kernel IPC Server', () => {
-  let server: IpcServer;
-  let port: number;
+describe('KernelIPC', () => {
+  let kernel: KernelIPC;
 
-  beforeAll(async () => {
-    server = new IpcServer(0);
-    server.onRequest('kernel.ping' as IpcMethod, async () => ({ pong: true, time: Date.now() }));
-    server.onRequest('kernel.status' as IpcMethod, async () => ({
-      uptime: 100, modules: 3, agents: 3, memory: 0, connections: 0,
+  beforeEach(() => {
+    kernel = new KernelIPC();
+  });
+
+  it('registers and invokes a handler', async () => {
+    kernel.register('test', 'echo', async (req: KernelRequest) => ({
+      success: true,
+      data: { message: req.params.msg },
     }));
-    server.onRequest('sys.fs.exists' as IpcMethod, async (req) => {
-      return (req.params.path as string).startsWith('/tmp/mindlife');
+
+    const result = await kernel.send({
+      type: 'api',
+      resource: 'test',
+      action: 'echo',
+      params: { msg: 'hello' },
     });
-    server.onRequest('module.list' as IpcMethod, async () => [
-      { id: 'nutrition', name: 'Nutrition' },
-      { id: 'sport', name: 'Sport' },
-    ]);
-    port = await server.start();
+
+    expect(result.success).toBe(true);
+    expect((result.data as any)?.message).toBe('hello');
+    expect(result.metrics?.durationMs).toBeGreaterThanOrEqual(0);
   });
 
-  afterAll(() => {
-    server.stop();
-  });
-
-  function wsConnect(): Promise<WebSocket> {
-    return new Promise((resolve, reject) => {
-      const ws = new WebSocket(`ws://127.0.0.1:${port}`);
-      ws.onopen = () => resolve(ws);
-      ws.onerror = () => reject(new Error('Connection failed'));
+  it('returns error for unknown handler', async () => {
+    const result = await kernel.send({
+      type: 'api',
+      resource: 'nonexistent',
+      action: 'unknown',
+      params: {},
     });
-  }
 
-  function wsRequest(ws: WebSocket, method: string, params: Record<string, unknown> = {}): Promise<any> {
-    return new Promise((resolve) => {
-      ws.onmessage = (event) => resolve(JSON.parse(event.data as string));
-      ws.send(JSON.stringify({
-        type: 'request', id: `req-${Date.now()}`, method, params,
-      }));
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('No handler');
+  });
+
+  it('tracks request statistics', async () => {
+    kernel.register('stats', 'ping', async () => ({ success: true, data: 'pong' }));
+
+    await kernel.send({ type: 'api', resource: 'stats', action: 'ping', params: {} });
+    await kernel.send({ type: 'api', resource: 'stats', action: 'ping', params: {} });
+
+    const stats = kernel.getStats();
+    expect(stats.totalRequests).toBe(2);
+    expect(stats.successfulRequests).toBe(2);
+    expect(stats.averageDurationMs).toBeGreaterThan(0);
+  });
+
+  it('tracks failed requests in stats', async () => {
+    await kernel.send({ type: 'api', resource: 'fail', action: 'nope', params: {} });
+
+    const stats = kernel.getStats();
+    expect(stats.totalRequests).toBe(1);
+    expect(stats.failedRequests).toBe(1);
+  });
+
+  it('records events for each request', async () => {
+    kernel.register('evt', 'go', async () => ({ success: true, data: 'done' }));
+
+    await kernel.send({ type: 'api', resource: 'evt', action: 'go', userId: 'user-1', params: {} });
+
+    const events = kernel.getEvents(10);
+    expect(events.length).toBe(1);
+    expect(events[0].resource).toBe('evt');
+    expect(events[0].action).toBe('go');
+    expect(events[0].userId).toBe('user-1');
+    expect(events[0].success).toBe(true);
+  });
+
+  it('handles wildcard resource handler (*:action)', async () => {
+    kernel.register('*', 'ping', async () => ({ success: true, data: 'wildcard-pong' }));
+
+    const result = await kernel.send({
+      type: 'api',
+      resource: 'anything',
+      action: 'ping',
+      params: {},
     });
-  }
 
-  it('responds to ping', async () => {
-    const ws = await wsConnect();
-    const response = await wsRequest(ws, 'kernel.ping');
-    expect(response.type).toBe('response');
-    expect(response.result.pong).toBe(true);
-    ws.close();
+    expect(result.success).toBe(true);
+    expect(result.data).toBe('wildcard-pong');
   });
 
-  it('handles unknown method gracefully', async () => {
-    const ws = await wsConnect();
-    const response = await wsRequest(ws, 'nonexistent.method');
-    expect(response.type).toBe('response');
-    expect(response.error.code).toBe('METHOD_NOT_FOUND');
-    ws.close();
-  });
+  it('handles wildcard action handler (resource:*)', async () => {
+    kernel.register('config', '*', async (req: KernelRequest) => ({
+      success: true,
+      data: { handled: req.action },
+    }));
 
-  it('returns kernel status', async () => {
-    const ws = await wsConnect();
-    const response = await wsRequest(ws, 'kernel.status');
-    expect(response.result.uptime).toBe(100);
-    expect(response.result.modules).toBe(3);
-    expect(response.result.connections).toBe(0);
-    ws.close();
-  });
-
-  it('handles syscall routing', async () => {
-    const ws = await wsConnect();
-    const response = await wsRequest(ws, 'sys.fs.exists', { path: '/tmp/mindlife/test.txt' });
-    expect(response.result).toBe(true);
-    ws.close();
-  });
-
-  it('lists modules', async () => {
-    const ws = await wsConnect();
-    const response = await wsRequest(ws, 'module.list');
-    expect(response.result).toHaveLength(2);
-    expect(response.result[0].id).toBe('nutrition');
-    ws.close();
-  });
-
-  it('broadcasts events to multiple clients', async () => {
-    const ws1 = await wsConnect();
-    const ws2 = await wsConnect();
-
-    const eventReceived = Promise.all([
-      new Promise<any>((resolve) => { ws1.onmessage = (e) => resolve(JSON.parse(e.data as string)); }),
-      new Promise<any>((resolve) => { ws2.onmessage = (e) => resolve(JSON.parse(e.data as string)); }),
-    ]);
-
-    server.broadcast('test:event', { msg: 'broadcast test' });
-
-    const [evt1, evt2] = await eventReceived;
-    expect(evt1.type).toBe('event');
-    expect(evt1.event).toBe('test:event');
-    expect(evt1.payload.msg).toBe('broadcast test');
-    expect(evt2.event).toBe('test:event');
-
-    ws1.close();
-    ws2.close();
-  });
-
-  it('handles JSON parse errors gracefully', async () => {
-    const ws = await wsConnect();
-    const response = await new Promise<any>((resolve) => {
-      ws.onmessage = (event) => resolve(JSON.parse(event.data as string));
-      ws.send('not json');
+    const result = await kernel.send({
+      type: 'api',
+      resource: 'config',
+      action: 'get',
+      params: {},
     });
-    expect(response.type).toBe('error');
-    ws.close();
+
+    expect(result.success).toBe(true);
+    expect((result.data as any).handled).toBe('get');
   });
 
-  it('supports concurrent connections', async () => {
-    const connections = await Promise.all(Array.from({ length: 5 }, () => wsConnect()));
-    const results = await Promise.all(connections.map((ws) => wsRequest(ws, 'kernel.ping')));
-    for (const r of results) {
-      expect(r.result.pong).toBe(true);
+  it('handles generic actions via resource:*', async () => {
+    kernel.register('generic', '*', async (req: KernelRequest) => ({
+      success: true,
+      data: `handled ${req.action}`,
+    }));
+
+    const r1 = await kernel.send({ type: 'api', resource: 'generic', action: 'create', params: {} });
+    const r2 = await kernel.send({ type: 'api', resource: 'generic', action: 'delete', params: {} });
+
+    expect(r1.data).toBe('handled create');
+    expect(r2.data).toBe('handled delete');
+  });
+
+  it('captures handler errors gracefully', async () => {
+    kernel.register('crash', 'boom', async () => {
+      throw new Error('kaboom');
+    });
+
+    const result = await kernel.send({
+      type: 'api',
+      resource: 'crash',
+      action: 'boom',
+      params: {},
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('kaboom');
+  });
+
+  it('exposes registered handler keys', async () => {
+    kernel.register('a', 'x', async () => ({ success: true, data: 'ok' }));
+    kernel.register('b', 'y', async () => ({ success: true, data: 'ok' }));
+
+    const handlers = kernel.registeredHandlers;
+    expect(handlers).toContain('a:x');
+    expect(handlers).toContain('b:y');
+  });
+
+  it('limits event storage to MAX_EVENTS', async () => {
+    kernel.register('flood', 'fill', async () => ({ success: true, data: 'x' }));
+
+    for (let i = 0; i < 1050; i++) {
+      await kernel.send({ type: 'api', resource: 'flood', action: 'fill', params: {} });
     }
-    connections.forEach((ws) => ws.close());
+
+    const events = kernel.getEvents(2000);
+    expect(events.length).toBeLessThanOrEqual(1000);
+  });
+
+  it('exposes uptime in stats', () => {
+    const stats = kernel.getStats();
+    expect(stats.uptime).toBeGreaterThanOrEqual(0);
+  });
+
+  it('passes request ID through the system', async () => {
+    kernel.register('idtest', 'check', async (req: KernelRequest) => ({
+      success: true,
+      data: { incomingId: req.id },
+    }));
+
+    const result = await kernel.send({
+      type: 'api',
+      resource: 'idtest',
+      action: 'check',
+      params: {},
+    });
+
+    expect(result.success).toBe(true);
+    expect((result.data as any)?.incomingId).toBeTruthy();
+    expect(String((result.data as any)?.incomingId)).toMatch(/^krn-/);
+  });
+
+  it('emits kernel:request event on EventBus', async () => {
+    const { eventBus } = await import('@/lib/bus/events');
+    let captured: any = null;
+    eventBus.on('kernel:request' as any, (p: any) => { captured = p; });
+
+    kernel.register('evtbus', 'test', async () => ({ success: true, data: 'ok' }));
+    await kernel.send({ type: 'api', resource: 'evtbus', action: 'test', params: {} });
+
+    expect(captured).not.toBeNull();
+    expect(captured.resource).toBe('evtbus');
+    expect(captured.action).toBe('test');
   });
 });

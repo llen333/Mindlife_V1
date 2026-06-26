@@ -1,0 +1,54 @@
+[
+  {
+    "id": "note-ideas",
+    "title": "Idées projets 2025",
+    "content": "## Projets à développer\n\n- App de productivité\n- Blog personnel\n- Chaîne YouTube\n- Podcast développement personnel",
+    "type": "markdown",
+    "tags": "[\"idées\",\"projets\",\"2025\"]",
+    "isPinned": true,
+    "isArchived": false,
+    "userId": "mindlife-user",
+    "categoryId": "cat-personal",
+    "createdAt": "2026-05-31T00:47:43.659Z",
+    "updatedAt": "2026-05-31T00:47:43.659Z"
+  },
+  {
+    "id": "note-recipes",
+    "title": "Recettes saines",
+    "content": "### Bowl poké\n\n- Riz complet\n- Saumon\n- Avocat\n- Edamame\n- Sauce soja\n\n### Smoothie énergie\n\n- Banane\n- Beurre de cacahuète\n- Lait d'avoine\n- Graines de chia",
+    "type": "markdown",
+    "tags": "[\"cuisine\",\"santé\",\"recettes\"]",
+    "isPinned": false,
+    "isArchived": false,
+    "userId": "mindlife-user",
+    "categoryId": "cat-health",
+    "createdAt": "2026-05-31T00:47:43.659Z",
+    "updatedAt": "2026-05-31T00:47:43.659Z"
+  },
+  {
+    "id": "note-japanese",
+    "title": "Vocabulaire japonais",
+    "content": "### Mots appris cette semaine\n\n- 会社 (kaisha) - entreprise\n- 仕事 (shigoto) - travail\n- 友達 (tomodachi) - ami\n- 家族 (kazoku) - famille",
+    "type": "markdown",
+    "tags": "[\"japonais\",\"vocabulaire\",\"N4\"]",
+    "isPinned": false,
+    "isArchived": false,
+    "userId": "mindlife-user",
+    "categoryId": "cat-education",
+    "createdAt": "2026-05-31T00:47:43.659Z",
+    "updatedAt": "2026-05-31T00:47:43.659Z"
+  },
+  {
+    "id": "note-1780257361299-sikfz",
+    "title": "Salutation de l'utilisateur",
+    "content": "L'utilisateur a dit : 'Salut mon Pote qué nouvelles ?'",
+    "type": "text",
+    "tags": null,
+    "isPinned": false,
+    "isArchived": false,
+    "userId": "mindlife-user",
+    "categoryId": null,
+    "createdAt": "2026-05-31T19:56:01.301Z",
+    "updatedAt": "2026-05-31T19:56:01.301Z"
+  }
+]

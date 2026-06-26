@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:3090)",
+      "Bash(tsc --noEmit --incremental false)"
+    ]
+  }
+}

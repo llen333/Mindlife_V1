@@ -251,7 +251,7 @@ export default function ManagementPage() {
   );
   
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#050505] text-slate-200 pl-[70px] pt-16">
+    <div ref={containerRef} className="min-h-screen bg-[#050505] text-slate-200">
       <style jsx global>{globalStyles}</style>
       
       {/* Background gradient mesh */}

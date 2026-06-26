@@ -129,7 +129,7 @@ const GoalsPanel = memo(function GoalsPanel() {
 
   return (
     <div className="min-h-screen bg-[#0a0f1a]">
-      <main className="pl-[70px] p-6 space-y-6 h-full overflow-y-auto">
+      <main className="p-6 space-y-6 h-full overflow-y-auto">
       {/* Header */}
       <div ref={headerRef} className="flex items-center justify-between">
         <div>

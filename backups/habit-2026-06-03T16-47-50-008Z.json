@@ -1,0 +1,58 @@
+[
+  {
+    "id": "habit-reading",
+    "name": "Lecture",
+    "description": "30 minutes de lecture",
+    "frequency": "daily",
+    "targetDays": "[\"monday\",\"tuesday\",\"wednesday\",\"thursday\",\"friday\",\"saturday\",\"sunday\"]",
+    "color": "blue",
+    "icon": "📚",
+    "isActive": true,
+    "userId": "mindlife-user",
+    "categoryId": "cat-education",
+    "createdAt": "2026-05-31T00:47:43.644Z",
+    "updatedAt": "2026-05-31T00:47:43.644Z"
+  },
+  {
+    "id": "habit-water",
+    "name": "Hydratation",
+    "description": "Boire 2L d'eau",
+    "frequency": "daily",
+    "targetDays": "[\"monday\",\"tuesday\",\"wednesday\",\"thursday\",\"friday\",\"saturday\",\"sunday\"]",
+    "color": "cyan",
+    "icon": "💧",
+    "isActive": true,
+    "userId": "mindlife-user",
+    "categoryId": "cat-health",
+    "createdAt": "2026-05-31T00:47:43.644Z",
+    "updatedAt": "2026-05-31T00:47:43.644Z"
+  },
+  {
+    "id": "habit-sport",
+    "name": "Sport",
+    "description": "Séance de sport ou marche",
+    "frequency": "weekly",
+    "targetDays": "[\"monday\",\"wednesday\",\"friday\"]",
+    "color": "emerald",
+    "icon": "🏃",
+    "isActive": true,
+    "userId": "mindlife-user",
+    "categoryId": "cat-sport",
+    "createdAt": "2026-05-31T00:47:43.644Z",
+    "updatedAt": "2026-05-31T00:47:43.644Z"
+  },
+  {
+    "id": "habit-meditation",
+    "name": "Méditation matinale",
+    "description": "20 minutes de méditation au réveil",
+    "frequency": "daily",
+    "targetDays": "[\"monday\",\"tuesday\",\"wednesday\",\"thursday\",\"friday\",\"saturday\",\"sunday\"]",
+    "color": "purple",
+    "icon": "🧘",
+    "isActive": true,
+    "userId": "mindlife-user",
+    "categoryId": "cat-spirituality",
+    "createdAt": "2026-05-31T00:47:43.644Z",
+    "updatedAt": "2026-05-31T00:47:43.644Z"
+  }
+]

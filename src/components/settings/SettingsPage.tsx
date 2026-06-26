@@ -116,7 +116,7 @@ export default function SettingsPage() {
         />
       </div>
 
-      <div className="relative z-10 pl-[70px]">
+      <div className="relative z-10">
         <div className="border-b border-white/[0.04] backdrop-blur-xl sticky top-0 z-20"
           style={{ background: 'rgba(11, 13, 20, 0.8)' }}
         >

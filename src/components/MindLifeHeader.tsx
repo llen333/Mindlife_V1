@@ -76,7 +76,7 @@ export default function MindLifeHeader({
   };
 
   return (
-    <header className="fixed top-0 left-[70px] right-0 z-[100] flex items-center justify-between px-4 lg:px-10 py-4 bg-[#050505]/95 backdrop-blur-xl border-b border-white/5">
+    <header className="flex items-center justify-between px-4 lg:px-10 py-4 bg-[#050505]/95 backdrop-blur-xl border-b border-white/5">
       {/* Left Section */}
       <div className="flex items-center gap-4 lg:gap-6">
         {/* Back Button */}

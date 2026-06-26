@@ -1,0 +1,26 @@
+[
+  {
+    "id": "journal-1",
+    "title": "Bonne journée productive",
+    "content": "Aujourd'hui j'ai réussi à terminer ma présentation pour le client. Je me sens satisfait de mon travail. La séance de sport m'a fait du bien.",
+    "mood": "great",
+    "gratitude": "[\"Ma santé\",\"Mon travail\",\"Ma famille\"]",
+    "wins": "[\"Présentation terminée\",\"Séance sport\",\"Méditation matinale\"]",
+    "challenges": "[\"Gestion du temps sur les réseaux sociaux\"]",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-29T22:00:00.000Z",
+    "updatedAt": "2026-05-31T00:47:43.671Z"
+  },
+  {
+    "id": "journal-2",
+    "title": "Journée calme",
+    "content": "Journée plus calme aujourd'hui. J'ai pris le temps de lire et me reposer. Parfois c'est nécessaire.",
+    "mood": "good",
+    "gratitude": "[\"Le temps pour moi\",\"Un bon livre\",\"Le soleil\"]",
+    "wins": "[\"Lecture 1h\",\"Promenade\",\"Cuisine saine\"]",
+    "challenges": "[\"Motivation le matin\"]",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-27T22:00:00.000Z",
+    "updatedAt": "2026-05-31T00:47:43.671Z"
+  }
+]

@@ -208,7 +208,7 @@ export default function SleepPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#070b13] pl-[70px] pt-20 pb-12 text-slate-100 font-sans">
+    <div className="min-h-screen bg-[#070b13] pb-12 text-slate-100 font-sans">
       <div className="max-w-6xl mx-auto px-6">
         
         {/* Header Panel */}

@@ -42,7 +42,7 @@ export default function OsShell() {
 
       <div className={showSidebar ? 'pl-[70px]' : ''}>
         <OsTopBar title={title} icon={Icon} />
-        <main className="p-6">
+        <main>
           <OsContent activePanel={activePanel} />
         </main>
       </div>

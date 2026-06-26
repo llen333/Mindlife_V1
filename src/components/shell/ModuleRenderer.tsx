@@ -24,7 +24,7 @@ export default function ModuleRenderer({ panelId }: { panelId: string }) {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -8 }}
-        transition={{ type: 'tween', ease: 'easeOut', duration: 0.2 }}
+        transition={{ type: 'tween', ease: 'easeOut', duration: 0.12 }}
       >
         <Panel />
       </motion.div>

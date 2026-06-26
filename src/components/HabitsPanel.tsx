@@ -116,7 +116,7 @@ const HabitsPanel = memo(function HabitsPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f1a] pl-[70px]">
+    <div className="min-h-screen bg-[#0a0f1a]">
       <main className="p-6 space-y-6 h-full overflow-y-auto">
       {/* Header */}
       <div ref={headerRef} className="flex items-center justify-between">

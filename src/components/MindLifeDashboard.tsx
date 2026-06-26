@@ -677,7 +677,7 @@ export default function MindLifeDashboard() {
   // Early return pour le loading (APRÈS les hooks)
   if (isLoading || !dataLoaded) {
     return (
-      <div className="min-h-screen bg-[#030712] pl-[70px] flex items-center justify-center relative overflow-hidden">
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center relative overflow-hidden">
         <AnimatedOrbs />
         <div className="text-center relative z-10">
           <div 
@@ -691,7 +691,7 @@ export default function MindLifeDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#030712] pl-[70px] relative overflow-hidden pt-20">
+    <div className="min-h-screen bg-[#030712] relative overflow-hidden">
       <AnimatedOrbs />
       
       <MindLifeHeader

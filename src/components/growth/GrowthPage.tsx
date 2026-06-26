@@ -261,7 +261,7 @@ export default function GrowthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-slate-200 overflow-x-hidden pl-[70px]">
+    <div className="min-h-screen bg-black text-slate-200 overflow-x-hidden">
       {/* Nebula Background */}
       <div
         className="fixed inset-0 z-0 pointer-events-none"

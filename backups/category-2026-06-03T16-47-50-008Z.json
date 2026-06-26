@@ -1,0 +1,102 @@
+[
+  {
+    "id": "cat-personal",
+    "name": "Développement Personnel",
+    "icon": "🎯",
+    "color": "violet",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.379Z",
+    "updatedAt": "2026-05-31T00:47:43.379Z"
+  },
+  {
+    "id": "cat-creativity",
+    "name": "Créativité & Arts",
+    "icon": "🎨",
+    "color": "cyan",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.447Z",
+    "updatedAt": "2026-05-31T00:47:43.447Z"
+  },
+  {
+    "id": "cat-sport",
+    "name": "Sport & Fitness",
+    "icon": "🏋️",
+    "color": "emerald",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.379Z",
+    "updatedAt": "2026-05-31T00:47:43.379Z"
+  },
+  {
+    "id": "cat-professional",
+    "name": "Vie Professionnelle",
+    "icon": "💼",
+    "color": "slate",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.379Z",
+    "updatedAt": "2026-05-31T00:47:43.379Z"
+  },
+  {
+    "id": "cat-travel",
+    "name": "Voyages & Aventures",
+    "icon": "✈️",
+    "color": "teal",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.450Z",
+    "updatedAt": "2026-05-31T00:47:43.450Z"
+  },
+  {
+    "id": "cat-health",
+    "name": "Santé & Bien-être",
+    "icon": "❤️",
+    "color": "rose",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.379Z",
+    "updatedAt": "2026-05-31T00:47:43.379Z"
+  },
+  {
+    "id": "cat-spirituality",
+    "name": "Spiritualité",
+    "icon": "🧘",
+    "color": "purple",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.379Z",
+    "updatedAt": "2026-05-31T00:47:43.379Z"
+  },
+  {
+    "id": "cat-education",
+    "name": "Éducation & Apprentissage",
+    "icon": "📚",
+    "color": "blue",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.379Z",
+    "updatedAt": "2026-05-31T00:47:43.379Z"
+  },
+  {
+    "id": "cat-finance",
+    "name": "Finance & Budget",
+    "icon": "💰",
+    "color": "amber",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.379Z",
+    "updatedAt": "2026-05-31T00:47:43.379Z"
+  },
+  {
+    "id": "cat-social",
+    "name": "Relations Sociales",
+    "icon": "👥",
+    "color": "pink",
+    "type": "goal",
+    "userId": "mindlife-user",
+    "createdAt": "2026-05-31T00:47:43.379Z",
+    "updatedAt": "2026-05-31T00:47:43.379Z"
+  }
+]

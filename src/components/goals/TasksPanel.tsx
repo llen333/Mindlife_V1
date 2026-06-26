@@ -449,7 +449,7 @@ const TasksPanel = memo(function TasksPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-[#030712] pl-[70px] relative overflow-hidden pt-20">
+    <div className="min-h-screen bg-[#030712] relative overflow-hidden">
       {/* Background animé - CSS NATIF au lieu de Framer Motion */}
       <AnimatedOrbsCSS />
       
@@ -483,7 +483,7 @@ const TasksPanel = memo(function TasksPanel() {
         }
       />
 
-      <main className="relative z-10 p-6 pt-24 space-y-6">
+      <main className="relative z-10 p-6 space-y-6">
         {/* === BARRE DE RECHERCHE ET FILTRES === */}
         <div ref={searchRef} className="flex flex-col lg:flex-row gap-4">
           {/* Recherche glassmorphism */}

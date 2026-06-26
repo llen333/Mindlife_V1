@@ -1,8 +1,9 @@
 import {
   LayoutDashboard, Calendar, CheckSquare, Target, Briefcase,
   Apple, ChefHat, Brain, BookOpen, TrendingUp, Heart, Dumbbell, Sparkles,
-  Cpu, Package, Moon, Settings, Activity,
+  Cpu, Package, Moon, Settings, Activity, GitBranch,
 } from 'lucide-react';
+
 import { registerPanel } from './ui-registry';
 import MindLifeDashboard from '@/components/dashboard/MindLifeDashboard';
 import CalendarPage from '@/components/calendar/CalendarPage';
@@ -20,7 +21,9 @@ import ModuleStorePage from '@/components/kernel/ModuleStore';
 import SleepPage from '@/components/SleepPage';
 import SettingsPage from '@/components/SettingsPage';
 import DiagnosticPage from '@/components/diagnostic/DiagnosticPage';
+import CanvasPanel from '@/components/canvas/CanvasPanel';
 
+registerPanel({ id: 'canvas', label: 'Canvas', icon: GitBranch, component: CanvasPanel, section: 'KERNEL' });
 registerPanel({ id: 'kernel', label: 'Kernel', icon: Cpu, component: KernelDashboard, section: 'KERNEL' });
 registerPanel({ id: 'store', label: 'Module Store', icon: Package, component: ModuleStorePage, section: 'KERNEL' });
 registerPanel({ id: 'dashboard', label: 'Tableau de Bord', icon: LayoutDashboard, component: MindLifeDashboard, section: 'PRINCIPAL' });

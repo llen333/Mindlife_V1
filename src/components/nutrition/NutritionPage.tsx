@@ -211,7 +211,7 @@ export default function NutritionPage() {
   }, [tts.isPlaying]);
 
   return (
-    <div className="min-h-screen bg-[#050706] text-white overflow-x-hidden pl-[70px] pt-16">
+    <div className="min-h-screen bg-[#050706] text-white overflow-x-hidden">
       <style jsx global>{globalStyles}</style>
       
       {/* Background gradient mesh */}

@@ -159,7 +159,7 @@ export default function SportPage() {
   const handleOpenKpi = () => setShowKpiModal(true);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-slate-200 pt-20">
+    <div className="min-h-screen bg-[#050505] text-slate-200">
       {/* Header */}
       <MindLifeHeader
         title="MindLife"

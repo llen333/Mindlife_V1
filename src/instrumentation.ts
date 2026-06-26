@@ -7,5 +7,8 @@ export async function register() {
       logRecordProcessors: [logProcessor],
       spanProcessors: [spanProcessor],
     }).start();
+
+    const { initKernel } = await import('@/lib/kernel/main');
+    initKernel();
   }
 }

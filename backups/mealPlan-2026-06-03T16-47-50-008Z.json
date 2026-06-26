@@ -1,0 +1,32 @@
+[
+  {
+    "id": "plan-1780079022352-gggbkucgy",
+    "userId": "mindlife-user",
+    "date": "2026-06-01T00:00:00.000Z",
+    "meals": "[{\"name\":\"Paella végétarienne\",\"type\":\"dinner\",\"calories\":450}]",
+    "totalCalories": 450,
+    "notes": null,
+    "createdAt": "2026-05-29T18:23:42.354Z",
+    "updatedAt": "2026-05-29T18:23:42.354Z"
+  },
+  {
+    "id": "plan-1780079238571-25lewgvkt",
+    "userId": "mindlife-user",
+    "date": "2026-06-02T00:00:00.000Z",
+    "meals": "[]",
+    "totalCalories": 0,
+    "notes": null,
+    "createdAt": "2026-05-29T18:27:18.572Z",
+    "updatedAt": "2026-05-29T18:27:18.572Z"
+  },
+  {
+    "id": "plan-1780080866958-bjxw0e065",
+    "userId": "mindlife-user",
+    "date": "2026-05-30T00:00:00.000Z",
+    "meals": "[{\"name\":\"Test repas\",\"type\":\"lunch\",\"calories\":500}]",
+    "totalCalories": 0,
+    "notes": null,
+    "createdAt": "2026-05-29T18:54:26.959Z",
+    "updatedAt": "2026-05-29T18:54:26.959Z"
+  }
+]

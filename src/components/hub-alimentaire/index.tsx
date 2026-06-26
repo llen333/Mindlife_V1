@@ -163,7 +163,7 @@ export default function HubAlimentairePage() {
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-[#080c0a] via-[#0a1210] to-[#080c0a] pl-[70px] pt-20">
+    <div ref={containerRef} className="min-h-screen bg-gradient-to-br from-[#080c0a] via-[#0a1210] to-[#080c0a]">
       <div className="fixed inset-0 bg-gradient-mesh pointer-events-none" />
 
       {/* Header */}
