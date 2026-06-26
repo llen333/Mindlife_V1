@@ -20,13 +20,14 @@ function mapCategoryId(categoryId: string | undefined): string | undefined {
   return categoryMap[categoryId] || categoryId;
 }
 
-// GET - List tasks with filters
+// GET - List tasks with filters + timeframe
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const priority = searchParams.get('priority');
     const categoryId = searchParams.get('categoryId');
+    const timeframe = searchParams.get('timeframe'); // day | week | month
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const userId = searchParams.get('userId') || 'mindlife-user';
@@ -47,14 +48,36 @@ export async function GET(request: NextRequest) {
       where.categoryId = categoryId;
     }
 
-    if (startDate || endDate) {
-      where.dueDate = {};
-      if (startDate) {
-        (where.dueDate as Record<string, Date>).gte = new Date(startDate);
-      }
-      if (endDate) {
-        (where.dueDate as Record<string, Date>).lte = new Date(endDate);
-      }
+    // Timeframe filter for Timeline (jour/semaine/mois)
+    const dateFilter: Record<string, Date> = {};
+    const now = new Date();
+
+    if (timeframe === 'day') {
+      const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1);
+      dateFilter.gte = start;
+      dateFilter.lt = end;
+    } else if (timeframe === 'week') {
+      const start = new Date(now);
+      start.setDate(start.getDate() - start.getDay()); // dimanche = début semaine
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 7);
+      dateFilter.gte = start;
+      dateFilter.lt = end;
+    } else if (timeframe === 'month') {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      dateFilter.gte = start;
+      dateFilter.lt = end;
+    }
+
+    if (startDate) dateFilter.gte = new Date(startDate);
+    if (endDate) dateFilter.lte = new Date(endDate);
+
+    if (Object.keys(dateFilter).length > 0) {
+      where.dueDate = dateFilter;
     }
 
     const tasks = await db.task.findMany({
@@ -66,10 +89,30 @@ export async function GET(request: NextRequest) {
       ],
       include: {
         Category: true,
+        Subtask: {
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
 
-    return NextResponse.json({ tasks });
+    // Mapper vers le format Timeline de Nico
+    const mapped = tasks.map((t) => ({
+      id: t.id,
+      title: t.title,
+      description: t.description || '',
+      date: t.dueDate?.toISOString() || t.startDate?.toISOString() || now.toISOString(),
+      durationMinutes: t.durationMinutes || 60,
+      status: t.status === 'completed' ? 'done' : (t.status as string),
+      priority: t.priority,
+      category: t.category || t.Category?.name || 'Général',
+      subtasks: (t.Subtask || []).map((s) => ({
+        id: s.id,
+        title: s.title,
+        completed: s.completed,
+      })),
+    }));
+
+    return NextResponse.json({ tasks: mapped });
   } catch (error) {
     console.error('Error fetching tasks:', error);
     return NextResponse.json(
@@ -85,7 +128,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { 
       title, description, status, priority, dueDate, tags, categoryId,
-      startDate, progress, chapters, observations, addToCalendar, createdBy,
+      startDate, durationMinutes, category, progress, chapters, observations, 
+      addToCalendar, createdBy, subtasks,
       userId: bodyUserId
     } = body;
     const userId = bodyUserId || 'mindlife-user';
@@ -106,10 +150,12 @@ export async function POST(request: NextRequest) {
         id: body.id || `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         title,
         description,
-        status: status || 'pending',
+        status: status === 'done' ? 'completed' : (status || 'pending'),
         priority: priority || 'medium',
         dueDate: dueDate ? new Date(dueDate) : undefined,
         startDate: startDate ? new Date(startDate) : undefined,
+        durationMinutes: durationMinutes || undefined,
+        category: category || undefined,
         chapters: chapters ? (typeof chapters === 'string' ? chapters : JSON.stringify(chapters)) : undefined,
         observations,
         addToCalendar: addToCalendar || false,
@@ -122,6 +168,17 @@ export async function POST(request: NextRequest) {
         Category: true,
       },
     });
+
+    if (subtasks && Array.isArray(subtasks) && subtasks.length > 0) {
+      await db.subtask.createMany({
+        data: subtasks.map((s: { title: string }) => ({
+          id: `subtask-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          title: s.title,
+          completed: false,
+          taskId: task.id,
+        })),
+      });
+    }
 
     // If addToCalendar is true, create an event linked to this task
     if (addToCalendar && startDate) {
@@ -159,10 +216,50 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({ task: updatedTask }, { status: 201 });
+      const updatedWithSubtasks = await db.task.findUnique({
+      where: { id: task.id },
+      include: { Category: true, Subtask: { orderBy: { createdAt: 'asc' } } },
+    });
+    return NextResponse.json({
+      task: updatedWithSubtasks ? {
+        id: updatedWithSubtasks.id,
+        title: updatedWithSubtasks.title,
+        description: updatedWithSubtasks.description || '',
+        date: updatedWithSubtasks.dueDate?.toISOString() || updatedWithSubtasks.startDate?.toISOString() || new Date().toISOString(),
+        durationMinutes: updatedWithSubtasks.durationMinutes || 60,
+        status: updatedWithSubtasks.status === 'completed' ? 'done' : updatedWithSubtasks.status,
+        priority: updatedWithSubtasks.priority,
+        category: updatedWithSubtasks.category || updatedWithSubtasks.Category?.name || 'Général',
+        subtasks: (updatedWithSubtasks.Subtask || []).map((s) => ({
+          id: s.id,
+          title: s.title,
+          completed: s.completed,
+        })),
+      } : task,
+    }, { status: 201 });
     }
 
-    return NextResponse.json({ task }, { status: 201 });
+    const freshTask = await db.task.findUnique({
+      where: { id: task.id },
+      include: { Category: true, Subtask: { orderBy: { createdAt: 'asc' } } },
+    });
+    return NextResponse.json({
+      task: freshTask ? {
+        id: freshTask.id,
+        title: freshTask.title,
+        description: freshTask.description || '',
+        date: freshTask.dueDate?.toISOString() || freshTask.startDate?.toISOString() || new Date().toISOString(),
+        durationMinutes: freshTask.durationMinutes || 60,
+        status: freshTask.status === 'completed' ? 'done' : freshTask.status,
+        priority: freshTask.priority,
+        category: freshTask.category || freshTask.Category?.name || 'Général',
+        subtasks: (freshTask.Subtask || []).map((s) => ({
+          id: s.id,
+          title: s.title,
+          completed: s.completed,
+        })),
+      } : task,
+    }, { status: 201 });
   } catch (error) {
     console.error('Error creating task:', error);
     return NextResponse.json(
@@ -178,7 +275,8 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { 
       id, title, description, status, priority, dueDate, tags, categoryId,
-      startDate, progress, chapters, observations, addToCalendar,
+      startDate, durationMinutes, category, progress, chapters, observations, 
+      addToCalendar, subtasks,
       userId: bodyUserId
     } = body;
     const userId = bodyUserId || 'mindlife-user';
@@ -219,6 +317,8 @@ export async function PUT(request: NextRequest) {
     if (priority !== undefined) updateData.priority = priority;
     if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
+    if (durationMinutes !== undefined) updateData.durationMinutes = durationMinutes;
+    if (category !== undefined) updateData.category = category;
     if (progress !== undefined) updateData.progress = progress;
     if (chapters !== undefined) updateData.chapters = chapters ? (typeof chapters === 'string' ? chapters : JSON.stringify(chapters)) : null;
     if (observations !== undefined) updateData.observations = observations;
@@ -226,12 +326,29 @@ export async function PUT(request: NextRequest) {
     if (tags !== undefined) updateData.tags = tags;
     if (categoryId !== undefined) updateData.categoryId = mappedCategoryId;
 
+    if (subtasks && Array.isArray(subtasks)) {
+      await db.subtask.deleteMany({ where: { taskId: id } });
+      if (subtasks.length > 0) {
+        await db.subtask.createMany({
+          data: subtasks.map((s: { title: string; completed?: boolean }) => ({
+            id: `subtask-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            title: s.title,
+            completed: s.completed || false,
+            taskId: id,
+          })),
+        });
+      }
+    }
+
     const task = await db.task.update({
       where: { id },
       data: updateData,
       include: {
         Category: true,
         Event: true,
+        Subtask: {
+          orderBy: { createdAt: 'asc' },
+        },
       },
     });
 
@@ -257,7 +374,23 @@ export async function PUT(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ task });
+    const mappedTask = {
+      id: task.id,
+      title: task.title,
+      description: task.description || '',
+      date: task.dueDate?.toISOString() || task.startDate?.toISOString() || new Date().toISOString(),
+      durationMinutes: task.durationMinutes || 60,
+      status: task.status === 'completed' ? 'done' : task.status,
+      priority: task.priority,
+      category: task.category || task.Category?.name || 'Général',
+      subtasks: (task.Subtask || []).map((s) => ({
+        id: s.id,
+        title: s.title,
+        completed: s.completed,
+      })),
+    };
+
+    return NextResponse.json({ task: mappedTask });
   } catch (error) {
     console.error('Error updating task:', error);
     return NextResponse.json(

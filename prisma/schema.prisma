@@ -338,31 +338,46 @@ model SportProfile {
 }
 
 model Task {
-  id            String    @id
-  title         String
-  description   String?
-  status        String    @default("pending")
-  priority      String    @default("medium")
-  dueDate       DateTime?
-  startDate     DateTime?
-  progress      Int       @default(0)
-  chapters      String?
-  observations  String?
-  createdBy     String    @default("user")
-  addToCalendar Boolean   @default(false)
-  completedAt   DateTime?
-  tags          String?
-  userId        String
-  categoryId    String?
-  eventId       String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now())
-  Event         Event?    @relation(fields: [eventId], references: [id])
-  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Category      Category? @relation(fields: [categoryId], references: [id])
+  id              String    @id
+  title           String
+  description     String?
+  status          String    @default("pending")  // "todo", "in_progress", "done"
+  priority        String    @default("medium")   // "low", "medium", "high"
+  dueDate         DateTime?
+  startDate       DateTime?
+  durationMinutes Int?
+  progress        Int       @default(0)
+  chapters        String?
+  observations    String?
+  createdBy       String    @default("user")
+  addToCalendar   Boolean   @default(false)
+  completedAt     DateTime?
+  tags            String?
+  category        String?                        // Tag pour couleurs frontend
+  userId          String
+  categoryId      String?
+  eventId         String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @default(now())
+  Event           Event?    @relation(fields: [eventId], references: [id])
+  User            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Category        Category? @relation(fields: [categoryId], references: [id])
+  Subtask         Subtask[]
 
   @@index([userId])
   @@index([status])
+}
+
+model Subtask {
+  id        String   @id
+  title     String
+  completed Boolean  @default(false)
+  taskId    String
+  Task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  @@index([taskId])
 }
 
 model User {
