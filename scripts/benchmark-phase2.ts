@@ -376,7 +376,7 @@ async function benchmarkVectorSearch(): Promise<void> {
 
 // Benchmark 6: Concurrent Agent Performance
 async function benchmarkConcurrentAgents(): Promise<void> {
-  console.log('⚡ Benchmark 6: Concurrent Agent Performance`);
+  console.log('⚡ Benchmark 6: Concurrent Agent Performance');
   
   const results: number[] = [];
   const concurrentAgents = 10;
