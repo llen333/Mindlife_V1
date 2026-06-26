@@ -346,6 +346,7 @@ model Task {
   dueDate         DateTime?
   startDate       DateTime?
   durationMinutes Int?
+  time            String?   // Format "HH:mm" pour placement Timeline (Drag & Drop)
   progress        Int       @default(0)
   chapters        String?
   observations    String?

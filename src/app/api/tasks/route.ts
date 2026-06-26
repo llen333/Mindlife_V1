@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 // Map short category IDs to DB category IDs
+// Helper: extrait le time "HH:mm" depuis un Date, ou depuis le champ `time` stocké
+const timeFromDate = (date: Date | null | undefined, storedTime?: string | null): string | undefined => {
+  if (storedTime) return storedTime;
+  if (date) return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  return undefined;
+};
+
 function mapCategoryId(categoryId: string | undefined): string | undefined {
   if (!categoryId) return undefined;
   
@@ -101,6 +108,7 @@ export async function GET(request: NextRequest) {
       title: t.title,
       description: t.description || '',
       date: t.dueDate?.toISOString() || t.startDate?.toISOString() || now.toISOString(),
+      time: timeFromDate(t.startDate || t.dueDate, t.time),
       durationMinutes: t.durationMinutes || 60,
       status: t.status === 'completed' ? 'done' : (t.status as string),
       priority: t.priority,
@@ -128,7 +136,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { 
       title, description, status, priority, dueDate, tags, categoryId,
-      startDate, durationMinutes, category, progress, chapters, observations, 
+      startDate, durationMinutes, time, category, progress, chapters, observations, 
       addToCalendar, createdBy, subtasks,
       userId: bodyUserId
     } = body;
@@ -155,6 +163,7 @@ export async function POST(request: NextRequest) {
         dueDate: dueDate ? new Date(dueDate) : undefined,
         startDate: startDate ? new Date(startDate) : undefined,
         durationMinutes: durationMinutes || undefined,
+        time: time || undefined,
         category: category || undefined,
         chapters: chapters ? (typeof chapters === 'string' ? chapters : JSON.stringify(chapters)) : undefined,
         observations,
@@ -226,6 +235,7 @@ export async function POST(request: NextRequest) {
         title: updatedWithSubtasks.title,
         description: updatedWithSubtasks.description || '',
         date: updatedWithSubtasks.dueDate?.toISOString() || updatedWithSubtasks.startDate?.toISOString() || new Date().toISOString(),
+        time: timeFromDate(updatedWithSubtasks.startDate || updatedWithSubtasks.dueDate, updatedWithSubtasks.time),
         durationMinutes: updatedWithSubtasks.durationMinutes || 60,
         status: updatedWithSubtasks.status === 'completed' ? 'done' : updatedWithSubtasks.status,
         priority: updatedWithSubtasks.priority,
@@ -249,6 +259,7 @@ export async function POST(request: NextRequest) {
         title: freshTask.title,
         description: freshTask.description || '',
         date: freshTask.dueDate?.toISOString() || freshTask.startDate?.toISOString() || new Date().toISOString(),
+        time: timeFromDate(freshTask.startDate || freshTask.dueDate, freshTask.time),
         durationMinutes: freshTask.durationMinutes || 60,
         status: freshTask.status === 'completed' ? 'done' : freshTask.status,
         priority: freshTask.priority,
@@ -275,7 +286,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { 
       id, title, description, status, priority, dueDate, tags, categoryId,
-      startDate, durationMinutes, category, progress, chapters, observations, 
+      startDate, durationMinutes, time, category, progress, chapters, observations, 
       addToCalendar, subtasks,
       userId: bodyUserId
     } = body;
@@ -318,6 +329,7 @@ export async function PUT(request: NextRequest) {
     if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
     if (durationMinutes !== undefined) updateData.durationMinutes = durationMinutes;
+    if (time !== undefined) updateData.time = time;
     if (category !== undefined) updateData.category = category;
     if (progress !== undefined) updateData.progress = progress;
     if (chapters !== undefined) updateData.chapters = chapters ? (typeof chapters === 'string' ? chapters : JSON.stringify(chapters)) : null;
@@ -379,6 +391,7 @@ export async function PUT(request: NextRequest) {
       title: task.title,
       description: task.description || '',
       date: task.dueDate?.toISOString() || task.startDate?.toISOString() || new Date().toISOString(),
+      time: timeFromDate(task.startDate || task.dueDate, task.time),
       durationMinutes: task.durationMinutes || 60,
       status: task.status === 'completed' ? 'done' : task.status,
       priority: task.priority,
