@@ -8,7 +8,9 @@ import {
   SYSTEM_PROMPTS,
 } from './ai-config';
 
-export { testProviderConnection } from './provider-defs';
+import { testProviderConnection, providerDefToConfig } from './provider-defs';
+import { getProvider } from './provider-registry';
+export { testProviderConnection, providerDefToConfig };
 import {
   generatePsychologistResponse,
   generateFriendResponse,
@@ -67,7 +69,8 @@ async function callOpenAICompatible(
   }
 
   const data = await response.json();
-  return data.choices?.[0]?.message?.content || '';
+  const msg = data.choices?.[0]?.message;
+  return msg?.content || msg?.reasoning_content || '';
 }
 
 async function callHuggingFace(messages: ChatMessage[], model: string, apiKey: string): Promise<string> {
@@ -269,8 +272,14 @@ export async function aiChat(
   ];
 
   try {
-    const providerConfig = PROVIDERS[provider];
-    const model = modelOverride || providerConfig.models.default;
+    let providerConfig = PROVIDERS[provider];
+    if (!providerConfig) {
+      const custom = await getProvider(provider);
+      if (custom) {
+        providerConfig = providerDefToConfig(custom);
+      }
+    }
+    const model = modelOverride || providerConfig?.models?.default || 'default';
     let content = '';
 
     if (provider === 'huggingface') {

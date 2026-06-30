@@ -26,11 +26,11 @@ export interface AIConfig {
 }
 
 const DEFAULT_CONFIG: AIConfig = {
-  defaultProvider: 'zai',
+  defaultProvider: 'opencode-go',
   apiKeys: Object.fromEntries(BUILTIN_PROVIDERS.map(p => [p.id, ''])),
   functionProviders: {
-    spirit: 'zai', meals: 'zai', sport: 'zai', chat: 'zai',
-    assistant: 'zai', calendar: 'zai', goals: 'zai', tasks: 'zai',
+    spirit: 'opencode-go', meals: 'opencode-go', sport: 'opencode-go', chat: 'opencode-go',
+    assistant: 'opencode-go', calendar: 'opencode-go', goals: 'opencode-go', tasks: 'opencode-go',
   },
   useFallbackOnError: true,
   userMemory: "Je m'appelle Llen. J'utilise MindLife pour m'organiser, planifier mes objectifs sportifs, suivre mes repas et réfléchir à la philosophie de vie.",

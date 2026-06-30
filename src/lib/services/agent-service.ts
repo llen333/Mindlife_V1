@@ -177,6 +177,43 @@ Rappels importants :
 
     const func = ROLE_TO_FUNCTION[agent.role] || 'assistant';
 
+    // ── ROUTE SPIRIT : pour psychologue/ami/stoïcien, PAS de planning, PAS de Bifrost ──
+    const SPIRIT_ROLES = ['psychologist'];
+    if (SPIRIT_ROLES.includes(agent.role)) {
+      const result = await aiChat(params.message, {
+        func,
+        systemPrompt,
+        userId: params.userId,
+        history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+        model: agent.model || undefined,
+      });
+
+      const content = result.success ? result.content : "Je suis là pour t'accompagner.";
+
+      await db.agentChatMessage.createMany({
+        data: [
+          { id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, sessionId: session.id, role: 'user', content: params.message },
+          { id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, sessionId: session.id, role: 'assistant', content },
+        ],
+      });
+      await db.agentSession.update({
+        where: { id: session.id },
+        data: { messageCount: { increment: 2 }, updatedAt: new Date() },
+      });
+      memoryManager.extractMemories(agent.id, params.message, content).catch(() => {});
+      memoryManager.synthesizeMemories(agent.id, params.message, content, session.id, agent.name).catch(() => {});
+
+      return {
+        content,
+        sessionId: session.id,
+        provider: result.provider,
+        agent: { id: agent.id, name: agent.name, role: agent.role },
+        memoriesLoaded: memories.length,
+        messagesInSession: recentMessages.length + 2,
+      };
+    }
+
+    // ── ROUTE STANDARD : Bifrost + Planning + Outils ──
     const extractJSON = (text: string) => {
       const jsonBlock = text.match(/```json\s*([\s\S]*?)\s*```/);
       if (jsonBlock) return jsonBlock[1].trim();
@@ -220,6 +257,7 @@ ${bifrostResult.response}
 Ne lis pas ce bloc tel quel. Reformule avec ton ton, ajoute une touche personnelle, mais garde les informations clés.`,
           userId: params.userId,
           history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+          model: agent.model || undefined,
         });
         resultContent = synthesis.success ? synthesis.content : bifrostResult.response!;
         usedProvider = synthesis.provider;
@@ -280,9 +318,10 @@ RÈGLES STRICTES :
       systemPrompt: plannerPrompt,
       userId: params.userId,
       history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+      model: agent.model || undefined,
     });
 
-    let resultContent: string;
+    let resultContent: string = planningResult.content || "Je n'ai pas pu générer de réponse.";
     let usedProvider = planningResult.provider;
 
     const cleanedContent = extractJSON(planningResult.content || '');
@@ -313,6 +352,7 @@ ${executionResults.join('\n')}
 Formule une réponse naturelle, chaleureuse et complète en français. Ne mentionne pas les noms techniques des outils.`,
             userId: params.userId,
             history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+            model: agent.model || undefined,
           });
           resultContent = synthesis.success ? synthesis.content : "Désolé, j'ai eu un problème lors de la synthèse.";
           usedProvider = synthesis.provider;
@@ -333,6 +373,7 @@ Formule une réponse naturelle, chaleureuse et complète en français. Ne mentio
 Formule une réponse naturelle et chaleureuse en français.`,
           userId: params.userId,
           history: recentMessages.map(m => ({ role: m.role as 'user' | 'assistant', content: m.content })),
+          model: agent.model || undefined,
         });
         resultContent = synthesis.success ? synthesis.content : toolResult.output;
         usedProvider = synthesis.provider;
@@ -421,8 +462,8 @@ Formule une réponse naturelle et chaleureuse en français.`,
           role: params.role,
           systemPrompt: params.systemPrompt || `Tu es un assistant spécialisé en ${params.role}.`,
           tone: params.tone || null,
-          provider: 'zai',
-          model: 'glm-4.5-air',
+          provider: 'opencode-go',
+          model: 'mimo-v2.5',
           mode: 'smart',
           isActive: true,
           capabilities: params.capabilities ? JSON.stringify(params.capabilities) : undefined,
@@ -460,8 +501,8 @@ Formule une réponse naturelle et chaleureuse en français.`,
           role: def.role,
           systemPrompt: def.systemPrompt,
           tone: def.tone,
-          provider: 'zai',
-          model: 'glm-4.5-air',
+          provider: 'opencode-go',
+          model: 'mimo-v2.5',
           mode: 'smart',
           isActive: true,
           capabilities: JSON.stringify(def.capabilities),
