@@ -43,9 +43,20 @@
       "defaultModel": "gemini-1.5-flash"
     }
   ],
-  "custom": [],
-  "updatedAt": "2026-05-31T15:05:41.106Z",
+  "custom": [
+    {
+      "id": "opencode-go",
+      "name": "Opencode Go",
+      "baseUrl": "https://opencode.ai/zen/go/v1",
+      "models": [],
+      "defaultModel": "Kimi-2.5",
+      "isBuiltin": false,
+      "apiKey": "sk-dxwJeZsT6SryHkxlIEkbnlhR81c6UK8Fk7KzgKkNNPHORHBAx061C2avZU99kmCd"
+    }
+  ],
+  "updatedAt": "2026-06-29T23:57:46.676Z",
   "modelOverrides": {
-    "zai": "glm-4.5-air"
+    "zai": "glm-4.5-air",
+    "opencode-go": "mimo-v2.5"
   }
 }

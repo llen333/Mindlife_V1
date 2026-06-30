@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: "standalone",
+  // output: "standalone",  // commented for local dev
   typescript: {
     ignoreBuildErrors: true, // À retirer en production
   },
