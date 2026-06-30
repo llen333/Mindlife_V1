@@ -65,6 +65,28 @@ function registerKernelInternalHandlers(): void {
     success: true,
     data: kernel.registeredHandlers,
   }));
+
+  // Handler pour le flux conversationnel — chaque message utilisateur transite par le kernel
+  kernel.register('agent', 'process', async (req: KernelRequest) => {
+    const agentId = String(req.params.agentId || '');
+    const messageLength = Number(req.params.messageLength) || 0;
+    const hasSession = Boolean(req.params.hasSession);
+
+    if (!agentId) {
+      return { success: false, error: 'ID agent requis' };
+    }
+    if (!hasSession) {
+      return { success: false, error: 'Session requise pour le traitement' };
+    }
+    if (messageLength < 1) {
+      return { success: false, error: 'Message vide' };
+    }
+    if (messageLength > 10000) {
+      return { success: false, error: 'Message trop long (max 10000 caractères)' };
+    }
+
+    return { success: true, data: { validated: true, agentId, timestamp: Date.now() } };
+  });
 }
 
 function setupEventBridge(): void {
@@ -78,10 +100,13 @@ function setupEventBridge(): void {
 }
 
 export function initKernel(): void {
-  registerKernelInternalHandlers();
   registerModuleHandlers();
   setupEventBridge();
   console.log(`[KERNEL] Initialisé — ${kernel.registeredHandlers.length} handlers enregistrés`);
 }
+
+// Auto-enregistrement des handlers kernel au chargement du module
+// (agent:process, kernel:stats, etc. — pas de dépendance externe)
+registerKernelInternalHandlers();
 
 export { kernel };

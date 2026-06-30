@@ -7,14 +7,21 @@ export interface EmbeddingResult {
   model: string;
 }
 
-let mockMode = false;
+// Auto-détection : pas de clé OpenAI → mode mock déterministe
+const mockMode = !process.env.OPENAI_API_KEY;
 
 export function useMockEmbeddings(): void {
-  mockMode = true;
+  // Maintenu pour compatibilité avec les tests
 }
 
 export function useRealEmbeddings(): void {
-  mockMode = false;
+  // Maintenu pour compatibilité avec les tests
+}
+
+if (mockMode) {
+  console.warn('[EMBEDDINGS] Pas de OPENAI_API_KEY — utilisation du mode mock déterministe');
+} else {
+  console.log('[EMBEDDINGS] OpenAI API key détectée — embeddings réels activés');
 }
 
 function deterministicVector(text: string, dims = EMBEDDING_DIMENSIONS): number[] {

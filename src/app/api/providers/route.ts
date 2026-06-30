@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllProviders, getProvider, addCustomProvider, removeCustomProvider, testProviderConnection, fetchProviderModels, updateProviderModel } from '@/lib/provider-registry';
+import { getAllProviders, getProvider, addCustomProvider, removeCustomProvider, testProviderConnection, fetchProviderModels, updateProviderModel, saveApiKeys, getStoredApiKeys } from '@/lib/provider-registry';
 
 export async function GET() {
   try {
@@ -89,6 +89,20 @@ export async function POST(request: NextRequest) {
         }
         await updateProviderModel(providerId, model);
         return NextResponse.json({ success: true, message: `Modèle changé pour ${model}` });
+      }
+
+      case 'sync-keys': {
+        const { apiKeys } = body;
+        if (!apiKeys || typeof apiKeys !== 'object') {
+          return NextResponse.json({ success: false, error: 'apiKeys requis (objet)' }, { status: 400 });
+        }
+        await saveApiKeys(apiKeys as Record<string, string>);
+        return NextResponse.json({ success: true, message: `${Object.keys(apiKeys).length} clés synchronisées` });
+      }
+
+      case 'get-keys': {
+        const keys = await getStoredApiKeys();
+        return NextResponse.json({ success: true, apiKeys: keys });
       }
 
       default:

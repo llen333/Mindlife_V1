@@ -25,6 +25,32 @@ import {
 } from '@/lib/ai-config';
 import { testProviderConnection } from '@/lib/ai-provider';
 
+async function syncApiKeyToServer(provider: string, key: string): Promise<void> {
+  try {
+    await fetch('/api/providers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'sync-keys', apiKeys: { [provider]: key } }),
+    });
+  } catch (e) {
+    console.warn('[SYNC] Échec synchro clé au serveur:', e);
+  }
+}
+
+async function loadServerKeys(): Promise<Record<string, string>> {
+  try {
+    const res = await fetch('/api/providers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get-keys' }),
+    });
+    const data = await res.json();
+    return data.apiKeys || {};
+  } catch {
+    return {};
+  }
+}
+
 interface AIConfigPanelProps {
   expanded?: boolean;
   onToggle?: () => void;
@@ -84,8 +110,10 @@ export default function AIConfigPanel({ expanded = true, onToggle }: AIConfigPan
 
   const handleSaveApiKey = () => {
     if (!apiKeyInput.trim()) return;
+    const key = apiKeyInput.trim();
     setIsSaving(true);
-    setApiKey(selectedProvider, apiKeyInput.trim());
+    setApiKey(selectedProvider, key);
+    syncApiKeyToServer(selectedProvider, key);
     setConfig(getAIConfig());
     setApiKeyInput('');
     setIsSaving(false);

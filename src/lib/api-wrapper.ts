@@ -42,14 +42,14 @@ export function withKernel(
         },
       });
 
-      if (!result.success && result.error === 'Permission denied') {
+      if (!result.success) {
         return NextResponse.json(
-          { error: 'Permission denied' },
+          { error: result.error || 'Requête refusée par le kernel' },
           { status: 403 }
         );
       }
     } catch {
-      // Continue to handler — kernel is advisory, not blocking
+      // Kernel non initialisé → on laisse passer la requête
     }
 
     try {

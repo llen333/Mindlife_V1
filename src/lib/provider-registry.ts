@@ -80,7 +80,7 @@ export async function getProvider(id: string): Promise<StoredProvider | undefine
   if (!p) return undefined;
   const sp = p as StoredProvider;
   if (p.isBuiltin) {
-    sp.apiKey = getEnvKey(p.id);
+    sp.apiKey = getEnvKey(p.id) || (await getStoredApiKeys())[p.id] || '';
   }
   return sp;
 }
@@ -96,6 +96,24 @@ export async function addCustomProvider(provider: StoredProvider): Promise<void>
 export async function removeCustomProvider(id: string): Promise<void> {
   const existing = await loadCustomProviders();
   await saveCustomProviders(existing.filter(p => p.id !== id));
+}
+
+// ── Stockage des clés API pour les providers built-in ──
+const API_KEYS_FILE = path.join(DATA_DIR, 'api-keys.json');
+
+export async function saveApiKeys(keys: Record<string, string>): Promise<void> {
+  await ensureDataDir();
+  await fs.writeFile(API_KEYS_FILE, JSON.stringify({ apiKeys: keys, updatedAt: new Date().toISOString() }, null, 2), 'utf-8');
+}
+
+export async function getStoredApiKeys(): Promise<Record<string, string>> {
+  try {
+    const raw = await fs.readFile(API_KEYS_FILE, 'utf-8');
+    const data = JSON.parse(raw);
+    return data.apiKeys || {};
+  } catch {
+    return {};
+  }
 }
 
 

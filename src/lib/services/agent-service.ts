@@ -7,6 +7,7 @@ import { bus } from '@/lib/bus/orchestrator';
 import '@/lib/modules';
 import { memoryManager, type MemoryRecord } from './agent-memory';
 import { sessionManager, type SessionPreview } from './agent-session';
+import { kernel } from '@/lib/kernel';
 
 export interface ProcessMessageParams {
   agentId: string;
@@ -109,6 +110,29 @@ class AgentService {
   async processMessage(params: ProcessMessageParams): Promise<ProcessMessageResult> {
     const agent = await db.agent.findUnique({ where: { id: params.agentId } });
     if (!agent) throw new Error(`Agent ${params.agentId} not found`);
+
+    // Kernel validation — chaque message transite par le kernel pour audit et contrôle
+    const kernelCheck = await kernel.send({
+      type: 'api',
+      resource: 'agent',
+      action: 'process',
+      userId: params.userId,
+      params: {
+        agentId: params.agentId,
+        messageLength: params.message.length,
+        hasSession: !!params.sessionId,
+      },
+    });
+    if (!kernelCheck.success) {
+      return {
+        content: kernelCheck.error || 'Message refusé par le kernel',
+        sessionId: params.sessionId || `session-${Date.now()}`,
+        provider: 'kernel',
+        agent: { id: params.agentId, name: agent?.name || 'inconnu', role: agent?.role || 'assistant' },
+        memoriesLoaded: 0,
+        messagesInSession: 0,
+      };
+    }
 
     let session = params.sessionId
       ? await db.agentSession.findUnique({ where: { id: params.sessionId } })

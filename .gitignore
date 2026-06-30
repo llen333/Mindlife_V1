@@ -5,3 +5,5 @@ node_modules/
 *.db
 db/
 .DS_Store
+*.backup
+src/data/api-keys.json

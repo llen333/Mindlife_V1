@@ -106,7 +106,7 @@ export function setFunctionProvider(func: AIFunction, provider: AIProvider): voi
 
 export function getFunctionProvider(func: AIFunction): AIProvider {
   const config = getAIConfig();
-  return config.functionProviders[func] || 'zai';
+  return config.functionProviders[func] || config.defaultProvider;
 }
 
 export function hasValidApiKey(provider: string): boolean {
