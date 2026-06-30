@@ -106,15 +106,7 @@ export function setFunctionProvider(func: AIFunction, provider: AIProvider): voi
 
 export function getFunctionProvider(func: AIFunction): AIProvider {
   const config = getAIConfig();
-  const provider = config.functionProviders[func];
-
-  if (provider !== 'local') {
-    const configKey = config.apiKeys[provider];
-    const envKey = typeof window === 'undefined' ? getEnvKey(provider) : undefined;
-    if (!configKey && !envKey) return 'local';
-  }
-
-  return provider;
+  return config.functionProviders[func] || 'zai';
 }
 
 export function hasValidApiKey(provider: string): boolean {

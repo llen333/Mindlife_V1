@@ -169,9 +169,12 @@ export class AgentRuntime {
 
   private async callLLM(prompt: string): Promise<string> {
     const { aiChat } = await import('@/lib/ai-provider');
-    const response = await aiChat([
-      { role: 'system', content: prompt },
-    ], { model: this.config.model, temperature: this.config.temperature ?? 0.7 });
-    return response;
+    const response = await aiChat(prompt, {
+      func: 'assistant',
+      systemPrompt: `Tu es ${this.config.name}, rôle : ${this.config.role}. ${this.config.systemPrompt}`,
+      model: this.config.model,
+      provider: this.config.provider,
+    });
+    return response.content;
   }
 }

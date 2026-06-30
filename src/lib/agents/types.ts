@@ -5,6 +5,7 @@ export interface AgentConfig {
   systemPrompt: string;
   tone?: string;
   model?: string;
+  provider?: string;
   temperature?: number;
   capabilities?: string[];
 }

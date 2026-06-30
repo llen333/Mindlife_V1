@@ -217,12 +217,14 @@ export async function aiChat(
     archetype?: 'psychologue' | 'ami' | 'stoicien';
     history?: ChatMessage[];
     userId?: string;
+    model?: string;
+    provider?: string;
   }
 ): Promise<AIResponse> {
-  const { func, systemPrompt: customSystem, archetype, history = [], userId } = options;
+  const { func, systemPrompt: customSystem, archetype, history = [], userId, model: modelOverride, provider: providerOverride } = options;
   const config = getAIConfig();
 
-  const provider = getFunctionProvider(func);
+  const provider = providerOverride || getFunctionProvider(func);
 
   if (provider === 'local') {
     return {
@@ -232,7 +234,16 @@ export async function aiChat(
     };
   }
 
-  const apiKey = getApiKey(provider);
+  let apiKey = getApiKey(provider);
+  if (!apiKey) {
+    try {
+      const { getProvider } = await import('./provider-registry');
+      const customProvider = await getProvider(provider);
+      if (customProvider?.apiKey) {
+        apiKey = customProvider.apiKey;
+      }
+    } catch {}
+  }
   if (!apiKey) {
     console.log(`No API key for ${provider}, using local fallback`);
     return {
@@ -259,7 +270,7 @@ export async function aiChat(
 
   try {
     const providerConfig = PROVIDERS[provider];
-    const model = providerConfig.models.default;
+    const model = modelOverride || providerConfig.models.default;
     let content = '';
 
     if (provider === 'huggingface') {
